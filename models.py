@@ -48,7 +48,7 @@ class Nestic(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.programa_nestic }', '{self.numero_piezas_criticas}', '{self.tiempo_corte }', '{self.espesor}', '{self.longitud_nestic}', '{self.modelo_elegido}', , '{self.date_created}')"
+        return f"usuario('{self.programa_nestic }', '{self.numero_piezas_criticas}', '{self.tiempo_corte }', '{self.espesor}', '{self.longitud_nestic}', '{self.modelo_elegido}', '{self.date_created}')"
 
     def serialize(self):
         return {
@@ -72,17 +72,15 @@ class Piezas(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.programa_nestic }', '{self.numero_piezas_criticas}', '{self.tiempo_corte }', '{self.espesor}', '{self.longitud_nestic}', '{self.modelo_elegido}', , '{self.date_created}')"
+        return f"usuario('{self.nombre_pieza}', '{self.cantidadPiezasPorPlancha}', '{self.crearLongitudCortePieza}', '{self.nesticElegido}', '{self.date_created}')"
 
     def serialize(self):
         return {
             "id":self.id,
-            "programa_nestic": self.programa_nestic,
-            "numero_piezas_criticas": self.numero_piezas_criticas,
-            "tiempo_corte": self.tiempo_corte ,
-            "espesor": self.espesor,
-            "longitud_nestic":self.longitud_nestic,
-            "modelo_elegido":self.modelo_elegido,
+            "nombre_pieza": self.nombre_pieza ,
+            "cantidadPiezasPorPlancha": self.cantidadPiezasPorPlancha,
+            "crearLongitudCortePieza": self.crearLongitudCortePieza,
+            "nesticElegido":self.nesticElegido,
             "date_created":self.date_created,
         }  
 

@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic
+from models import db, Modelo, Nestic, Piezas
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -119,6 +119,58 @@ def crearNestic():
         "Nestic": usua.serialize() 
     }
     return jsonify({'msg': 'Modelo agregado exitosamente'}),  200
+
+
+
+
+
+@app.route("/api/crearpieza", methods=['POST'])
+def crearPiezas():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        nombre_pieza = request.json.get('nombre_pieza', None)
+        cantidadPiezasPorPlancha = request.json.get('cantidadPiezasPorPlancha', None)
+        crearLongitudCortePieza = request.json.get('crearLongitudCortePieza', None)
+        nesticElegido = request.json.get('nesticElegido', None)
+
+        
+        if not nombre_pieza:
+            return jsonify({"msg": "Falta introducir el nombre de la pieza "}), 400
+        if not cantidadPiezasPorPlancha:
+            return jsonify({"msg": "Falta introducir el nombre la cantidad"}), 400
+        if not crearLongitudCortePieza:
+            return jsonify({"msg": "Falta introducirla longitud"}), 400
+        if not nesticElegido:
+            return jsonify({"msg": "Falta seleccionar el programa nestic"}), 400
+
+        
+        usua = Piezas()
+        usua.nombre_pieza = nombre_pieza
+        usua.cantidadPiezasPorPlancha = cantidadPiezasPorPlancha
+        usua.crearLongitudCortePieza = crearLongitudCortePieza
+        usua.nesticElegido = nesticElegido
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Piezas": usua.serialize() 
+    }
+    return jsonify({'msg': 'Pieza agregada exitosamente'}),  200
+
+
+
+
+
+
+
+@app.route('/api/Nesticsdisponibles/<name>', methods=['GET'])
+def nesticsDisponibles(name):
+    if request.method == 'GET':
+        listaNestics = Nestic.query.filter_by(modelo_elegido=name).all()
+        listaNestics = list(map(lambda listaNestics: listaNestics.serialize(), listaNestics))
+        return jsonify(listaNestics), 200
 
 
 
