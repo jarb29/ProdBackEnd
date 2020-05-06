@@ -29,8 +29,7 @@ class Modelo(db.Model):
             "id":self.id,
             "nombre_programa": self.nombre_programa,
             "numero_ot": self.numero_ot,
-            "date_created": self.date_created,
-            "nestic_id": self.date_created,
+            "date_created": self.date_created
         }  
 
 
