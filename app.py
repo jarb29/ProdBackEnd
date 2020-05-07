@@ -54,14 +54,18 @@ def crearProgramas():
 
         numero_ot = request.json.get('numero_ot', None)
         nombre_programa = request.json.get('nombre_programa', None)
+        cantiadUnidadesFabricarEnLaOt = request.json.get('cantiadUnidadesFabricarEnLaOt', None)
         if not numero_ot:
             return jsonify({"msg": "Falta introducir el numero OT"}), 400
         if not nombre_programa:
             return jsonify({"msg": "Falta introducir el nombre del programa"}), 400
+        if not cantiadUnidadesFabricarEnLaOt:
+            return jsonify({"msg": "Falta introducir la cantidad"}), 400
         
         usua = Modelo()
         usua.numero_ot = numero_ot
         usua.nombre_programa = nombre_programa
+        usua.cantiadUnidadesFabricarEnLaOt = cantiadUnidadesFabricarEnLaOt
         db.session.add(usua)
         db.session.commit()
 
@@ -172,6 +176,13 @@ def nesticsDisponibles(name):
         listaNestics = list(map(lambda listaNestics: listaNestics.serialize(), listaNestics))
         return jsonify(listaNestics), 200
 
+
+@app.route('/api/nesticsmodelar/<name>', methods=['GET'])
+def nesticsModelar(name):
+    if request.method == 'GET':
+        listaNesticsModelar = Nestic.query.filter_by(modelo_elegido=name).all()
+        listaNesticsModelar = list(map(lambda listaNesticsModelar: listaNesticsModelar.serialize(), listaNesticsModelar))
+        return jsonify(listaNesticsModelar), 200
 
 
 

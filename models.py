@@ -18,18 +18,20 @@ class Modelo(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     nombre_programa = db.Column(db.String(100), nullable = False)
     numero_ot = db.Column(db.String(100), nullable = False)
+    cantiadUnidadesFabricarEnLaOt = db.Column(db.String(100), nullable = False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     nestic_id = db.relationship('Nestic',  backref= 'Modelo_seleccionado', lazy = True)
 
     def __repr__(self):
-        return f"usuario('{self.nombre_programa}', '{self.numero_ot}', '{self.date_created}')"
+        return f"usuario('{self.nombre_programa}', '{self.numero_ot}', '{self.date_created}', '{self.cantiadUnidadesFabricarEnLaOt}')"
 
     def serialize(self):
         return {
             "id":self.id,
             "nombre_programa": self.nombre_programa,
             "numero_ot": self.numero_ot,
-            "date_created": self.date_created
+            "date_created": self.date_created,
+            "cantiadUnidadesFabricarEnLaOt": self.cantiadUnidadesFabricarEnLaOt
         }  
 
 
@@ -42,7 +44,7 @@ class Nestic(db.Model):
     tiempo_corte = db.Column(db.String(100), nullable = False, unique=True)
     espesor = db.Column(db.String(100), nullable = False)
     longitud_nestic = db.Column(db.String(100), nullable = False)
-    modelo_elegido = db.Column(db.Integer, db.ForeignKey('modelo.id'), nullable=False)
+    modelo_elegido = db.Column(db.String(100), db.ForeignKey('modelo.id'), nullable=False)
     pieza_id = db.relationship('Piezas',  backref= 'Modelo_seleccionado', lazy = True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
