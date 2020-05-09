@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 5bd92dde1a0f
+Revision ID: b351a0198e33
 Revises: 
-Create Date: 2020-05-07 14:24:45.435834
+Create Date: 2020-05-08 15:28:03.124452
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '5bd92dde1a0f'
+revision = 'b351a0198e33'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,34 +21,32 @@ def upgrade():
     op.create_table('modelo',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre_programa', sa.String(length=100), nullable=False),
-    sa.Column('numero_ot', sa.String(length=100), nullable=False),
-    sa.Column('cantiadUnidadesFabricarEnLaOt', sa.String(length=100), nullable=False),
+    sa.Column('numero_ot', sa.Integer(), nullable=True),
+    sa.Column('cantiadUnidadesFabricarEnLaOt', sa.Integer(), nullable=True),
     sa.Column('date_created', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('nestic',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('programa_nestic', sa.String(length=100), nullable=False),
-    sa.Column('numero_piezas_criticas', sa.String(length=100), nullable=False),
-    sa.Column('tiempo_corte', sa.String(length=100), nullable=False),
-    sa.Column('espesor', sa.String(length=100), nullable=False),
-    sa.Column('longitud_nestic', sa.String(length=100), nullable=False),
+    sa.Column('numero_piezas_criticas', sa.Integer(), nullable=True),
+    sa.Column('tiempo_corte', sa.Integer(), nullable=True),
+    sa.Column('espesor', sa.Integer(), nullable=True),
+    sa.Column('longitud_nestic', sa.Integer(), nullable=True),
     sa.Column('modelo_elegido', sa.String(length=100), nullable=False),
     sa.Column('date_created', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['modelo_elegido'], ['modelo.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('tiempo_corte')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('piezas',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nombre_pieza', sa.String(length=100), nullable=False),
-    sa.Column('cantidadPiezasPorPlancha', sa.String(length=100), nullable=False),
-    sa.Column('crearLongitudCortePieza', sa.String(length=100), nullable=False),
+    sa.Column('cantidadPiezasPorPlancha', sa.Integer(), nullable=True),
+    sa.Column('crearLongitudCortePieza', sa.Integer(), nullable=True),
     sa.Column('nesticElegido', sa.Integer(), nullable=False),
     sa.Column('date_created', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['nesticElegido'], ['nestic.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('crearLongitudCortePieza')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 

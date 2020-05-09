@@ -169,10 +169,10 @@ def crearPiezas():
 
 
 
-@app.route('/api/Nesticsdisponibles/<name>', methods=['GET'])
-def nesticsDisponibles(name):
+@app.route('/api/Nesticsdisponibles', methods=['GET'])
+def nesticsDisponibles():
     if request.method == 'GET':
-        listaNestics = Nestic.query.filter_by(modelo_elegido=name).all()
+        listaNestics = Nestic.query.all()
         listaNestics = list(map(lambda listaNestics: listaNestics.serialize(), listaNestics))
         return jsonify(listaNestics), 200
 

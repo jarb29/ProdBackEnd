@@ -17,8 +17,8 @@ class Modelo(db.Model):
     __tablename__ = 'modelo'
     id = db.Column(db.Integer, primary_key = True)
     nombre_programa = db.Column(db.String(100), nullable = False)
-    numero_ot = db.Column(db.String(100), nullable = False)
-    cantiadUnidadesFabricarEnLaOt = db.Column(db.String(100), nullable = False)
+    numero_ot = db.Column(db.Integer)
+    cantiadUnidadesFabricarEnLaOt = db.Column(db.Integer)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     nestic_id = db.relationship('Nestic',  backref= 'Modelo_seleccionado', lazy = True)
 
@@ -40,10 +40,10 @@ class Nestic(db.Model):
     __tablename__ = 'nestic'
     id = db.Column(db.Integer, primary_key = True)
     programa_nestic = db.Column(db.String(100), nullable = False)
-    numero_piezas_criticas = db.Column(db.String(100), nullable = False)
-    tiempo_corte = db.Column(db.String(100), nullable = False, unique=True)
-    espesor = db.Column(db.String(100), nullable = False)
-    longitud_nestic = db.Column(db.String(100), nullable = False)
+    numero_piezas_criticas = db.Column(db.Integer)
+    tiempo_corte = db.Column(db.Integer)
+    espesor = db.Column(db.Integer)
+    longitud_nestic = db.Column(db.Integer)
     modelo_elegido = db.Column(db.String(100), db.ForeignKey('modelo.id'), nullable=False)
     pieza_id = db.relationship('Piezas',  backref= 'Modelo_seleccionado', lazy = True)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
@@ -67,8 +67,8 @@ class Piezas(db.Model):
     __tablename__ = 'piezas'
     id = db.Column(db.Integer, primary_key = True)
     nombre_pieza = db.Column(db.String(100), nullable = False)
-    cantidadPiezasPorPlancha = db.Column(db.String(100), nullable = False)
-    crearLongitudCortePieza = db.Column(db.String(100), nullable = False, unique=True)
+    cantidadPiezasPorPlancha = db.Column(db.Integer)
+    crearLongitudCortePieza = db.Column(db.Integer)
     nesticElegido = db.Column(db.Integer, db.ForeignKey('nestic.id'), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
