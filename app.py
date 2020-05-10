@@ -182,6 +182,10 @@ def crearModeloProducion():
             return jsonify({"msg": "Falta introducir OT"}), 400
         if not cantidad_producir:
             return jsonify({"msg": "Falta introducirla longitud"}), 400
+        
+        usua = ModeloProduccion.query.filter_by(ot_produccion=ot_produccion).first()
+        if usua:
+            return jsonify({"msg": "EL producto ya existe"}), 400
 
         
         usua = ModeloProduccion()
@@ -195,11 +199,6 @@ def crearModeloProducion():
         "Piezas": usua.serialize() 
     }
     return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}),  200
-
-
-
-
-
 
 
 
@@ -218,6 +217,11 @@ def nesticsModelar(name):
         listaNesticsModelar = list(map(lambda listaNesticsModelar: listaNesticsModelar.serialize(), listaNesticsModelar))
         return jsonify(listaNesticsModelar), 200
 
+@app.route('/api/otProduccion', methods=['GET'])
+def otProduccion():
+    listaOt = ModeloProduccion.query.all()
+    listaOt = list(map(lambda listaOt: listaOt.serialize(), listaOt))
+    return jsonify(listaOt), 200
 
 
 
