@@ -224,6 +224,19 @@ def otProduccion():
     return jsonify(listaOt), 200
 
 
+@app.route('/api/nesticProduccion/<int:id>', methods=['GET'])
+def nesticProduccion(id):
+    
+    modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
+    print(modelo_ot)
+    modelo_ot = modelo_ot.nombre_programa
+    print(modelo_ot)
+    nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
+    nesti_ot = list(map(lambda nesti_ot: nesti_ot.serialize(), nesti_ot))
+    return jsonify(nesti_ot), 200
+
+
+
 
 if __name__ == '__main__':
     manager.run()
