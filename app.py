@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -235,6 +235,40 @@ def nesticProduccion(id):
     nesti_ot = list(map(lambda nesti_ot: nesti_ot.serialize(), nesti_ot))
     return jsonify(nesti_ot), 200
 
+
+@app.route("/api/plachascortadas", methods=['POST'])
+def planchasCortadas():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        planchas_cortadas = request.json.get('planchas_cortadas', None)
+        ot_cortada = request.json.get('ot_cortada', None)
+        operador = request.json.get('operador', None)
+        nestic_cortado = request.json.get('nestic_cortado', None)
+        
+        if not planchas_cortadas:
+            return jsonify({"msg": "Falta introducir las planchas cortadas"}), 400
+        if not ot_cortada:
+            return jsonify({"msg": "Falta introducir la ot cortada"}), 400
+        if not operador:
+            return jsonify({"msg": "Falta introducir el operador"}), 400
+        if not nestic_cortado:
+            return jsonify({"msg": "Falta introducir programa cortado"}), 400
+
+        
+        usua = NesticProduccion()
+        usua.planchas_cortadas = planchas_cortadas
+        usua.ot_cortada = ot_cortada
+        usua.operador= operador
+        usua.nestic_cortado= nestic_cortado
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Nestic": usua.serialize() 
+    }
+    return jsonify({'msg': 'Planchas cortadas agregadas exitosamente'}),  200
 
 
 

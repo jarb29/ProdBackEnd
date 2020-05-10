@@ -103,6 +103,28 @@ class ModeloProduccion(db.Model):
             "ot_produccion": self.ot_produccion,
             "cantidad_producir": self.cantidad_producir,
             "date_created": self.date_created
+        }
+
+class NesticProduccion(db.Model):
+    __tablename__ = 'nesticProduccion'
+    id = db.Column(db.Integer, primary_key = True)
+    planchas_cortadas = db.Column(db.Integer)
+    ot_cortada = db.Column(db.Integer)
+    operador = db.Column(db.String(100), nullable = False)
+    nestic_cortado = db.Column(db.String(100), nullable = False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"usuario('{self.planchas_cortadas }', '{self.ot_cortada}', '{self.operador}', '{self.nestic_cortado}', '{self.date_created}')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "planchas_cortadas": self.planchas_cortadas,
+            "ot_cortada": self.ot_cortada,
+            "operador": self.operador,
+            "nestic_cortado":self.nestic_cortado,
+            "date_created": self.date_created
         }  
 
 
