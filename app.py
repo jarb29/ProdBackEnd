@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -162,6 +162,40 @@ def crearPiezas():
         "Piezas": usua.serialize() 
     }
     return jsonify({'msg': 'Pieza agregada exitosamente'}),  200
+
+
+@app.route("/api/modelosproduccion", methods=['POST'])
+def crearModeloProducion():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        modelo_produccion = request.json.get('modelo_produccion', None)
+        ot_produccion = request.json.get('ot_produccion', None)
+        cantidad_producir = request.json.get('cantidad_producir', None)
+        nesticElegido = request.json.get('nesticElegido', None)
+
+        
+        if not modelo_produccion:
+            return jsonify({"msg": "Falta introducir el modelo "}), 400
+        if not ot_produccion:
+            return jsonify({"msg": "Falta introducir OT"}), 400
+        if not cantidad_producir:
+            return jsonify({"msg": "Falta introducirla longitud"}), 400
+
+        
+        usua = ModeloProduccion()
+        usua.modelo_produccion = modelo_produccion
+        usua.ot_produccion = ot_produccion
+        usua.cantidad_producir = cantidad_producir
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Piezas": usua.serialize() 
+    }
+    return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}),  200
+
 
 
 

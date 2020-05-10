@@ -85,6 +85,25 @@ class Piezas(db.Model):
             "date_created":self.date_created,
         }  
 
+class ModeloProduccion(db.Model):
+    __tablename__ = 'modeloProduccion'
+    id = db.Column(db.Integer, primary_key = True)
+    modelo_produccion = db.Column(db.String(100), nullable = False)
+    ot_produccion = db.Column(db.Integer)
+    cantidad_producir = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"usuario('{self.modelo_produccion}', '{self.ot_produccion}', '{self.cantidad_producir}', '{self.date_created}')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "modelo_produccion": self.modelo_produccion,
+            "ot_produccion": self.ot_produccion,
+            "cantidad_producir": self.cantidad_producir,
+            "date_created": self.date_created
+        }  
 
 
 
