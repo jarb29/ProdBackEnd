@@ -228,9 +228,7 @@ def otProduccion():
 def nesticProduccion(id):
     
     modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
-    print(modelo_ot)
     modelo_ot = modelo_ot.nombre_programa
-    print(modelo_ot)
     nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
     nesti_ot = list(map(lambda nesti_ot: nesti_ot.serialize(), nesti_ot))
     return jsonify(nesti_ot), 200
@@ -255,6 +253,10 @@ def planchasCortadas():
             return jsonify({"msg": "Falta introducir el operador"}), 400
         if not nestic_cortado:
             return jsonify({"msg": "Falta introducir programa cortado"}), 400
+        
+        usua = NesticProduccion.query.filter_by(planchas_cortadas=planchas_cortadas, ot_cortada=ot_cortada, operador=operador, nestic_cortado=nestic_cortado).first()
+        if usua:
+            return jsonify({"msg": "Corte ya fue cargado"}), 400
 
         
         usua = NesticProduccion()
@@ -269,6 +271,25 @@ def planchasCortadas():
         "Nestic": usua.serialize() 
     }
     return jsonify({'msg': 'Planchas cortadas agregadas exitosamente'}),  200
+
+
+
+@app.route('/api/modelarEstufas/<int:id>/<int:estufas>', methods=['GET'])
+def modeloaEtufas(id, estufas):
+    print(id)
+    print(estufas)
+    modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
+    modelo_ot = modelo_ot.nombre_programa
+    nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
+    planchasModelar = []
+    for nest in nesti_ot:
+        planchas = round(estufas / nest.numero_piezas_criticas, 0)
+        data = {
+            "nestic": nest.programa_nestic,
+            "planchas": planchas
+        }
+        planchasModelar.append(data)
+    return jsonify(planchasModelar), 200
 
 
 
