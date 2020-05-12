@@ -295,13 +295,15 @@ def modeloaEtufas(id, estufas):
 @app.route('/api/tablaestufasProduccion/', methods=['GET'])
 def estufasProduccion():
     modelosEnProduccion = ModeloProduccion.query.all()
-    piezas_cortadas = []
+    piezas_cortadas = {}
     for modelo in modelosEnProduccion:
+        piezas_modelo = []
         nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion).all()
         for nesti in nestis:
             piezas = Piezas.query.filter_by(nesticElegido = nesti.nestic_cortado).all()
             for pieza in piezas:
                 total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
+                
                 if total_pieza <= modelo.cantidad_producir:
                     data = {
                         "operador":nesti.operador,
@@ -311,7 +313,8 @@ def estufasProduccion():
                         "nombre_pieza": pieza.nombre_pieza,
                         "cantidad_fabricada": total_pieza
                         }
-                    piezas_cortadas.append(data)
+                piezas_modelo.append(data)
+        piezas_cortadas[modelo.modelo_produccion] = piezas_modelo
     return jsonify(piezas_cortadas), 200
 
 
