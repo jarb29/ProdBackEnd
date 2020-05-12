@@ -295,27 +295,40 @@ def modeloaEtufas(id, estufas):
 @app.route('/api/tablaestufasProduccion/', methods=['GET'])
 def estufasProduccion():
     modelosEnProduccion = ModeloProduccion.query.all()
-    piezas_cortadas = {}
+    
+    piezas_modelo = {}
     for modelo in modelosEnProduccion:
-        piezas_modelo = {}
-        nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion).all()
-        for nesti in nestis:
+        piezas = Piezas.query.all()
+        piezas_cortadas = {}
+        
+        for pieza in piezas:
             pieza_nestic = []
-            piezas = Piezas.query.filter_by(nesticElegido = nesti.nestic_cortado).all()
-            for pieza in piezas:
+            total_pieza_suma = 0 
+            nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado=pieza.nesticElegido).all()
+            
+            for nesti in nestis:
+                
                 total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
+                total_pieza_suma += total_pieza
                 if total_pieza <= modelo.cantidad_producir:
                     data = {
                         "operador":nesti.operador,
                         "ot_produccion": modelo.ot_produccion,
                         "nestic_produccion": nesti.nestic_cortado,
                         "nombre_pieza": pieza.nombre_pieza,
-                        "cantidad_fabricada": total_pieza
+                        "cantidad_fabricada": total_pieza,
+                        "total pieza": total_pieza_suma
                         }
                     pieza_nestic.append(data)
-                piezas_modelo[pieza.nombre_pieza] = pieza_nestic
-        piezas_cortadas[modelo.modelo_produccion] = piezas_modelo
-    return jsonify(piezas_cortadas), 200
+                total ={
+                    "total_pieza": total_pieza_suma
+                    }
+                pieza_nestic.append(total)
+                piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
+                
+
+            piezas_modelo[modelo.modelo_produccion] = piezas_cortadas
+    return jsonify(piezas_modelo), 200
 
 
 
