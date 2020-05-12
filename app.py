@@ -305,29 +305,31 @@ def estufasProduccion():
             pieza_nestic = []
             total_pieza_suma = 0 
             nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado=pieza.nesticElegido).all()
-            
+            i = 1
             for nesti in nestis:
-                
                 total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
-                total_pieza_suma += total_pieza
                 if total_pieza <= modelo.cantidad_producir:
+                    
+                    total_pieza_suma += total_pieza
                     data = {
                         "operador":nesti.operador,
                         "ot_produccion": modelo.ot_produccion,
                         "nestic_produccion": nesti.nestic_cortado,
                         "nombre_pieza": pieza.nombre_pieza,
-                        "cantidad_fabricada": total_pieza,
+                        "cantidad_fabricada_por_corte": total_pieza,
                         "total pieza": total_pieza_suma
                         }
                     pieza_nestic.append(data)
                 total ={
                     "total_pieza": total_pieza_suma
-                    }
-                pieza_nestic.append(total)
+                    } 
+                print(i)
+                print(len(nestis))
+                if (i == len(nestis)):
+                    pieza_nestic.append(total)
+                i +=1
                 piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
-                
-
-            piezas_modelo[modelo.modelo_produccion] = piezas_cortadas
+        piezas_modelo[modelo.modelo_produccion] = piezas_cortadas
     return jsonify(piezas_modelo), 200
 
 
