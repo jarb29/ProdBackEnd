@@ -292,7 +292,7 @@ def modeloaEtufas(id, estufas):
     return jsonify(planchasModelar), 200
 
 
-@app.route('/api/tablaestufasProduccion/', methods=['GET'])
+@app.route('/api/tablaestufasProduccionnn/', methods=['GET'])
 def estufasProduccion():
     modelosEnProduccion = ModeloProduccion.query.all()
     
@@ -323,14 +323,44 @@ def estufasProduccion():
                 total ={
                     "total_pieza": total_pieza_suma
                     } 
-                print(i)
-                print(len(nestis))
                 if (i == len(nestis)):
                     pieza_nestic.append(total)
                 i +=1
                 piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
         piezas_modelo[modelo.modelo_produccion] = piezas_cortadas
     return jsonify(piezas_modelo), 200
+
+
+@app.route('/api/tablaestufasProduccion/', methods=['GET'])
+def estufasProduccionnn():
+    totales_por_modelo = []
+    modelosEnProduccion = ModeloProduccion.query.all()
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_por_modelo = []
+        piezas_en_un_modelo = []
+        for pieza in piezas:
+            i = 1
+            total_pieza_suma = 0
+            nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado=pieza.nesticElegido).all()
+            for nesti in nestis:
+                total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
+                total_pieza_suma += total_pieza
+                if i == len(nestis):
+                    total ={
+                        "total_pieza": total_pieza_suma,
+                        "nombre_pieza": pieza.nombre_pieza,
+                        "programa": modelo.modelo_produccion
+                    }
+                    piezas_en_un_modelo.append(total)
+                i +=1
+        totales_por_modelo.append(piezas_en_un_modelo)
+        print(totales_por_modelo)
+    
+    return jsonify(totales_por_modelo), 200
+
+
+
 
 
 
