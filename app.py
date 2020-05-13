@@ -292,7 +292,7 @@ def modeloaEtufas(id, estufas):
     return jsonify(planchasModelar), 200
 
 
-@app.route('/api/tablaestufasProduccionnn/', methods=['GET'])
+@app.route('/api/tablaestufasProduccion/', methods=['GET'])
 def estufasProduccion():
     modelosEnProduccion = ModeloProduccion.query.all()
     
@@ -331,7 +331,7 @@ def estufasProduccion():
     return jsonify(piezas_modelo), 200
 
 
-@app.route('/api/tablaestufasProduccion/', methods=['GET'])
+@app.route('/api/tablaestufasProduccionnn/', methods=['GET'])
 def estufasProduccionnn():
     totales_por_modelo = []
     piezas_por_modelo =[]
@@ -372,7 +372,7 @@ def estufasProduccionnn():
         piezas_por_modelo.append(piezas_cortadas)
         
 
-    return jsonify(piezas_por_modelo), 200
+    return jsonify(totales_por_modelo, piezas_por_modelo), 200
 
 
 
