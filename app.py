@@ -317,11 +317,13 @@ def estufasProduccion():
                         "nestic_produccion": nesti.nestic_cortado,
                         "nombre_pieza": pieza.nombre_pieza,
                         "cantidad_fabricada_por_corte": total_pieza,
-                        "total pieza": total_pieza_suma
+                        "total pieza": total_pieza_suma,
+                         "fecha": nesti.date_created
                         }
                     pieza_nestic.append(data)
                 total ={
-                    "total_pieza": total_pieza_suma
+                    "total_pieza": total_pieza_suma,
+                     "fecha": nesti.date_created
                     } 
                 if (i == len(nestis)):
                     pieza_nestic.append(total)
@@ -363,7 +365,8 @@ def estufasProduccionnn():
                     total ={
                         "total_pieza": total_pieza_suma,
                         "nombre_pieza": pieza.nombre_pieza,
-                        "programa": modelo.modelo_produccion
+                        "programa": modelo.modelo_produccion,
+                        "fecha": nesti.date_created
                     }
                     piezas_en_un_modelo.append(total)
                 i +=1
