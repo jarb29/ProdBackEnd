@@ -20,7 +20,7 @@ class Modelo(db.Model):
     numero_ot = db.Column(db.Integer)
     cantiadUnidadesFabricarEnLaOt = db.Column(db.Integer)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    nestic_id = db.relationship('Nestic',  backref= 'Modelo_seleccionado', lazy = True)
+    nestic_id = db.Column(db.String(100))
 
     def __repr__(self):
         return f"usuario('{self.nombre_programa}', '{self.numero_ot}', '{self.date_created}', '{self.cantiadUnidadesFabricarEnLaOt}')"
@@ -44,8 +44,8 @@ class Nestic(db.Model):
     tiempo_corte = db.Column(db.Integer)
     espesor = db.Column(db.Integer)
     longitud_nestic = db.Column(db.Integer)
-    modelo_elegido = db.Column(db.String(100), db.ForeignKey('modelo.id'), nullable=False)
-    pieza_id = db.relationship('Piezas',  backref= 'Modelo_seleccionado', lazy = True)
+    modelo_elegido = db.Column(db.String(100))
+    pieza_id = db.Column(db.String(100))
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
@@ -69,7 +69,7 @@ class Piezas(db.Model):
     nombre_pieza = db.Column(db.String(100), nullable = False)
     cantidadPiezasPorPlancha = db.Column(db.Integer)
     crearLongitudCortePieza = db.Column(db.Integer)
-    nesticElegido = db.Column(db.Integer, db.ForeignKey('nestic.id'), nullable=False)
+    nesticElegido = db.Column(db.String(100), nullable = False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):

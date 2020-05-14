@@ -386,13 +386,22 @@ def estufasProduccionnn():
 
 @app.route('/api/plegadopiezas/<int:id>', methods=['GET'])
 def plegadopiezasDisponible(id):
+    piezas_por_modelo = []
     modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
     modelo_ot = modelo_ot.nombre_programa
     nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
-    for nest in nest_ot:
-        piezas = Piezas.query.filter_by(nesticElegido=nest).all
-        piezas_disponibles = list(map(lambda piezas: piezas.serialize(), piezas))
-    return jsonify(piezas_disponibles), 200
+    for nest in nesti_ot:
+        nombre = nest.programa_nestic
+        piezas = Piezas.query.filter_by(nesticElegido = nombre).all()
+        for pieza in piezas:
+            data = {
+                "nombre_pieza": pieza.nombre_pieza,
+                "nestic": pieza.nesticElegido,
+                "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
+            }
+            piezas_por_modelo.append(data)
+    
+    return jsonify(piezas_por_modelo), 200
 
 
 
