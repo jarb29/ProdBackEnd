@@ -283,7 +283,7 @@ def modeloaEtufas(id, estufas):
     tiempo_por_nestic = []
     for nest in nesti_ot:
         planchas = round(estufas / nest.numero_piezas_criticas, 0)
-        tiempo_por_corte = planchas*(nest.tiempo_corte + 0.4)
+        tiempo_por_corte = round(planchas*(nest.tiempo_corte + 0.4))
         data = {
             "nestic": nest.programa_nestic,
             "plancha": planchas,
