@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -404,6 +404,44 @@ def plegadopiezasDisponible(id):
     return jsonify(piezas_por_modelo), 200
 
 
+# Logica para crear la tabla de piezas de plegado
+@app.route("/api/piezasplegado", methods=['POST'])
+def crearPiezasPlegado():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        plegado_ot_seleccionado = request.json.get('plegado_ot_seleccionado', None)
+        plegadoPiezaSeleccionada = request.json.get('plegadoPiezaSeleccionada', None)
+        plegadoMaquinaSeleccionada = request.json.get('plegadoMaquinaSeleccionada', None)
+        plegadoOperadorSeleccionado = request.json.get('plegadoOperadorSeleccionado', None)
+        plegadoCantidadPiezas = request.json.get('plegadoCantidadPiezas', None)
+
+        
+        if not plegado_ot_seleccionado:
+            return jsonify({"msg": "Falta introducir Ot"}), 400
+        if not plegadoPiezaSeleccionada:
+            return jsonify({"msg": "Falta introducir las piezas"}), 400
+        if not plegadoMaquinaSeleccionada:
+            return jsonify({"msg": "Falta plegadora"}), 400
+        if not plegadoOperadorSeleccionado:
+            return jsonify({"msg": "Falta operador"}), 400
+        if not plegadoCantidadPiezas:
+            return jsonify({"msg": "Falta cantidad de piezas"}), 400
+        
+        usua = Plegado()
+        usua.plegado_ot_seleccionado = plegado_ot_seleccionado
+        usua.plegadoPiezaSeleccionada = plegadoPiezaSeleccionada
+        usua.plegadoMaquinaSeleccionada  = plegadoMaquinaSeleccionada 
+        usua.plegadoOperadorSeleccionado  = plegadoOperadorSeleccionado
+        usua.plegadoCantidadPiezas  = plegadoCantidadPiezas
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Piezas_plegado": usua.serialize() 
+    }
+    return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}, data),  200
 
 
 

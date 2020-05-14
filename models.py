@@ -125,6 +125,31 @@ class NesticProduccion(db.Model):
             "operador": self.operador,
             "nestic_cortado":self.nestic_cortado,
             "date_created": self.date_created
+        } 
+
+
+
+class Plegado(db.Model):
+    __tablename__ = 'plegado'
+    id = db.Column(db.Integer, primary_key = True)
+    plegado_ot_seleccionado = db.Column(db.Integer)
+    plegadoPiezaSeleccionada = db.Column(db.String(100), nullable = False)
+    plegadoMaquinaSeleccionada = db.Column(db.String(100), nullable = False)
+    plegadoOperadorSeleccionado = db.Column(db.String(100), nullable = False)
+    plegadoCantidadPiezas = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"usuario('{self.plegado_ot_seleccionado}', '{self.plegadoPiezaSeleccionada}', '{self.plegadoMaquinaSeleccionada}', '{self.plegadoOperadorSeleccionado}', '{self.plegadoCantidadPiezas}')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "nombre_pieza": self.plegado_ot_seleccionado,
+            "cantidadPiezasPorPlancha": self.plegadoPiezaSeleccionada,
+            "crearLongitudCortePieza": self.plegadoMaquinaSeleccionada,
+            "nesticElegido":self.plegadoOperadorSeleccionado,
+            "date_created":self.plegadoCantidadPiezas,
         }  
 
 
