@@ -381,8 +381,18 @@ def estufasProduccionnn():
     return jsonify(totales_por_modelo, piezas_por_modelo), 200
 
 
+# de aca en adelante datos para plegado
+# 1 obtener las piezas disponibles por modelo
 
-
+@app.route('/api/plegadopiezas/<int:id>', methods=['GET'])
+def plegadopiezasDisponible(id):
+    modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
+    modelo_ot = modelo_ot.nombre_programa
+    nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
+    for nest in nest_ot:
+        piezas = Piezas.query.filter_by(nesticElegido=nest).all
+        piezas_disponibles = list(map(lambda piezas: piezas.serialize(), piezas))
+    return jsonify(piezas_disponibles), 200
 
 
 
