@@ -23,7 +23,7 @@ class Modelo(db.Model):
     nestic_id = db.Column(db.String(100))
 
     def __repr__(self):
-        return f"usuario('{self.nombre_programa}', '{self.numero_ot}', '{self.date_created}', '{self.cantiadUnidadesFabricarEnLaOt}')"
+        return f"modelo('{self.nombre_programa}', '{self.numero_ot}', '{self.date_created}', '{self.cantiadUnidadesFabricarEnLaOt}')"
 
     def serialize(self):
         return {
@@ -49,7 +49,7 @@ class Nestic(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.programa_nestic }', '{self.numero_piezas_criticas}', '{self.tiempo_corte }', '{self.espesor}', '{self.longitud_nestic}', '{self.modelo_elegido}', '{self.date_created}')"
+        return f"nestic('{self.programa_nestic }', '{self.numero_piezas_criticas}', '{self.tiempo_corte }', '{self.espesor}', '{self.longitud_nestic}', '{self.modelo_elegido}', '{self.date_created}')"
 
     def serialize(self):
         return {
@@ -73,7 +73,7 @@ class Piezas(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.nombre_pieza}', '{self.cantidadPiezasPorPlancha}', '{self.crearLongitudCortePieza}', '{self.nesticElegido}', '{self.date_created}')"
+        return f"piezas('{self.nombre_pieza}', '{self.cantidadPiezasPorPlancha}', '{self.crearLongitudCortePieza}', '{self.nesticElegido}', '{self.date_created}')"
 
     def serialize(self):
         return {
@@ -94,7 +94,7 @@ class ModeloProduccion(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.modelo_produccion}', '{self.ot_produccion}', '{self.cantidad_producir}', '{self.date_created}')"
+        return f"modeloProduccion('{self.modelo_produccion}', '{self.ot_produccion}', '{self.cantidad_producir}', '{self.date_created}')"
 
     def serialize(self):
         return {
@@ -115,7 +115,7 @@ class NesticProduccion(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.planchas_cortadas }', '{self.ot_cortada}', '{self.operador}', '{self.nestic_cortado}', '{self.date_created}')"
+        return f"nesticProduccion('{self.planchas_cortadas }', '{self.ot_cortada}', '{self.operador}', '{self.nestic_cortado}', '{self.date_created}')"
 
     def serialize(self):
         return {
@@ -140,18 +140,37 @@ class Plegado(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"usuario('{self.plegado_ot_seleccionado}', '{self.plegadoPiezaSeleccionada}', '{self.plegadoMaquinaSeleccionada}', '{self.plegadoOperadorSeleccionado}', '{self.plegadoCantidadPiezas}')"
+        return f"plegado('{self.plegado_ot_seleccionado}', '{self.plegadoPiezaSeleccionada}', '{self.plegadoMaquinaSeleccionada}', '{self.plegadoOperadorSeleccionado}', '{self.plegadoCantidadPiezas}')"
 
     def serialize(self):
         return {
             "id":self.id,
             "nombre_pieza": self.plegado_ot_seleccionado,
-            "cantidadPiezasPorPlancha": self.plegadoPiezaSeleccionada,
-            "crearLongitudCortePieza": self.plegadoMaquinaSeleccionada,
-            "nesticElegido":self.plegadoOperadorSeleccionado,
+            "plegadoPiezaSeleccionada": self.plegadoPiezaSeleccionada,
+            "plegadoMaquinaSeleccionada": self.plegadoMaquinaSeleccionada,
+            "plegadoOperadorSeleccionado":self.plegadoOperadorSeleccionado,
             "date_created":self.plegadoCantidadPiezas,
         }  
 
 
+class Pintura(db.Model):
+    __tablename__ = 'pintura'
+    id = db.Column(db.Integer, primary_key = True)
+    pintura_ot_seleccionado = db.Column(db.Integer)
+    pinturaPiezaSeleccionada = db.Column(db.String(100), nullable = False)
+    pinturaCantidadPiezas = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"pintura('{self.pintura_ot_seleccionado}', '{self.pinturaPiezaSeleccionada}', '{self.pinturaCantidadPiezas}', '{self.date_created }')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "pintura_ot_seleccionado": self.pintura_ot_seleccionado,
+            "pinturaPiezaSeleccionada": self.pinturaPiezaSeleccionada,
+            "pinturaCantidadPiezas": self.pinturaCantidadPiezas,
+            "date_created":self.date_created
+        }  
 
 

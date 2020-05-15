@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -479,8 +479,83 @@ def piezasPlegadas():
         piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
     
     return jsonify(piezas_modelo), 200
-  
-              
+
+
+# Logica para crear la tabla de piezas de pintura
+@app.route("/api/piezaspintura", methods=['POST'])
+def crearPiezasPintura():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        pintura_ot_seleccionado = request.json.get('pintura_ot_seleccionado', None)
+        pinturaPiezaSeleccionada = request.json.get('pinturaPiezaSeleccionada', None)
+        pinturaCantidadPiezas = request.json.get('pinturaCantidadPiezas', None)
+
+        
+        if not pintura_ot_seleccionado:
+            return jsonify({"msg": "Falta introducir Ot"}), 400
+        if not pinturaPiezaSeleccionada:
+            return jsonify({"msg": "Falta introducir la pieza"}), 400
+        if not pinturaCantidadPiezas:
+            return jsonify({"msg": "Falta introducir cantidad"}), 400
+
+        
+        usua = Pintura()
+        usua.pintura_ot_seleccionado = pintura_ot_seleccionado
+        usua.pinturaPiezaSeleccionada = pinturaPiezaSeleccionada
+        usua.pinturaCantidadPiezas  = pinturaCantidadPiezas
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Piezas_pintadas": usua.serialize() 
+    }
+    return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}, data),  200
+
+# Logica para obter la tabla de piezas de pintura
+@app.route('/api/piezasPintadas', methods=['GET'])
+def piezasPintadas():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    piezas_modelo = {}
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_plegadas = {}
+        for pieza in piezas:
+            pieza_plegado = []
+            total_pieza_suma = 0 
+            piezas_en_plegado = Plegado.query.filter_by(plegado_ot_seleccionado = modelo.ot_produccion, plegadoPiezaSeleccionada=pieza.nombre_pieza).all()
+            i = 1
+            for pieza_en_plegado in piezas_en_plegado:
+                total_pieza = pieza_en_plegado.plegadoCantidadPiezas
+                total_pieza_suma += total_pieza
+                if total_pieza_suma <= modelo.cantidad_producir: 
+
+                    data = {
+                        "operador": pieza_en_plegado.plegadoOperadorSeleccionado,
+                        "ot_produccion": pieza_en_plegado.	plegado_ot_seleccionado,
+                        "nombre_pieza": pieza_en_plegado.plegadoPiezaSeleccionada,
+                        "cantidad_fabricada_por_dia": pieza_en_plegado.plegadoCantidadPiezas,
+                        "total pieza": total_pieza_suma,
+                         "fecha": pieza_en_plegado.date_created
+                        }
+                    pieza_plegado.append(data)
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": pieza_en_plegado.date_created
+                    } 
+                if (i == len(piezas_en_plegado)):
+                    pieza_plegado.append(total)
+                i +=1
+                piezas_plegadas[pieza.nombre_pieza] = pieza_plegado 
+        piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
+    
+    return jsonify(piezas_modelo), 200
+
+
+
+
+
 
 
 if __name__ == '__main__':
