@@ -520,35 +520,34 @@ def piezasPintadas():
     piezas_modelo = {}
     for modelo in modelosEnProduccion:
         piezas = Piezas.query.all()
-        piezas_plegadas = {}
+        piezas_pintadas = {}
         for pieza in piezas:
-            pieza_plegado = []
+            pieza_pintura = []
             total_pieza_suma = 0 
-            piezas_en_plegado = Plegado.query.filter_by(plegado_ot_seleccionado = modelo.ot_produccion, plegadoPiezaSeleccionada=pieza.nombre_pieza).all()
+            piezas_en_pintura = Pintura.query.filter_by(pintura_ot_seleccionado = modelo.ot_produccion, pinturaPiezaSeleccionada=pieza.nombre_pieza).all()
             i = 1
-            for pieza_en_plegado in piezas_en_plegado:
-                total_pieza = pieza_en_plegado.plegadoCantidadPiezas
+            for pieza_en_pintura in piezas_en_pintura:
+                total_pieza = pieza_en_pintura.pinturaCantidadPiezas
                 total_pieza_suma += total_pieza
                 if total_pieza_suma <= modelo.cantidad_producir: 
 
                     data = {
-                        "operador": pieza_en_plegado.plegadoOperadorSeleccionado,
-                        "ot_produccion": pieza_en_plegado.	plegado_ot_seleccionado,
-                        "nombre_pieza": pieza_en_plegado.plegadoPiezaSeleccionada,
-                        "cantidad_fabricada_por_dia": pieza_en_plegado.plegadoCantidadPiezas,
+                        "ot_produccion": pieza_en_pintura.pintura_ot_seleccionado,
+                        "nombre_pieza": pieza_en_pintura.pinturaPiezaSeleccionada,
+                        "cantidad_fabricada_por_dia": pieza_en_pintura.pinturaCantidadPiezas,
                         "total pieza": total_pieza_suma,
-                         "fecha": pieza_en_plegado.date_created
+                         "fecha": pieza_en_pintura.date_created
                         }
-                    pieza_plegado.append(data)
+                    pieza_pintura.append(data)
                 total ={
                     "total_pieza": total_pieza_suma,
-                     "fecha": pieza_en_plegado.date_created
+                     "fecha": pieza_en_pintura.date_created
                     } 
-                if (i == len(piezas_en_plegado)):
-                    pieza_plegado.append(total)
+                if (i == len(piezas_en_pintura)):
+                    pieza_pintura.append(total)
                 i +=1
-                piezas_plegadas[pieza.nombre_pieza] = pieza_plegado 
-        piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
+                piezas_pintadas[pieza.nombre_pieza] = pieza_pintura
+        piezas_modelo[modelo.modelo_produccion] = piezas_pintadas
     
     return jsonify(piezas_modelo), 200
 
