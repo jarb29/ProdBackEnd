@@ -311,9 +311,8 @@ def estufasProduccion():
             i = 1
             for nesti in nestis:
                 total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
-                if total_pieza <= modelo.cantidad_producir:
-                    
-                    total_pieza_suma += total_pieza
+                total_pieza_suma += total_pieza
+                if total_pieza_suma <= modelo.cantidad_producir:
                     data = {
                         "operador":nesti.operador,
                         "ot_produccion": modelo.ot_produccion,
@@ -381,7 +380,7 @@ def estufasProduccionnn():
     return jsonify(totales_por_modelo, piezas_por_modelo), 200
 
 
-# de aca en adelante datos para plegado
+# desde aca en adelante datos para plegado
 # 1 obtener las piezas disponibles por modelo
 
 @app.route('/api/plegadopiezas/<int:id>', methods=['GET'])
@@ -443,6 +442,45 @@ def crearPiezasPlegado():
     }
     return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}, data),  200
 
+@app.route('/api/piezasPlegadas', methods=['GET'])
+def piezasPlegadas():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    piezas_modelo = {}
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_plegadas = {}
+        for pieza in piezas:
+            pieza_plegado = []
+            total_pieza_suma = 0 
+            piezas_en_plegado = Plegado.query.filter_by(plegado_ot_seleccionado = modelo.ot_produccion, plegadoPiezaSeleccionada=pieza.nombre_pieza).all()
+            i = 1
+            for pieza_en_plegado in piezas_en_plegado:
+                total_pieza = pieza_en_plegado.plegadoCantidadPiezas
+                total_pieza_suma += total_pieza
+                if total_pieza_suma <= modelo.cantidad_producir: 
+
+                    data = {
+                        "operador": pieza_en_plegado.plegadoOperadorSeleccionado,
+                        "ot_produccion": pieza_en_plegado.	plegado_ot_seleccionado,
+                        "nombre_pieza": pieza_en_plegado.plegadoPiezaSeleccionada,
+                        "cantidad_fabricada_por_dia": pieza_en_plegado.plegadoCantidadPiezas,
+                        "total pieza": total_pieza_suma,
+                         "fecha": pieza_en_plegado.date_created
+                        }
+                    pieza_plegado.append(data)
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": pieza_en_plegado.date_created
+                    } 
+                if (i == len(piezas_en_plegado)):
+                    pieza_plegado.append(total)
+                i +=1
+                piezas_plegadas[pieza.nombre_pieza] = pieza_plegado 
+        piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
+    
+    return jsonify(piezas_modelo), 200
+  
+              
 
 
 if __name__ == '__main__':
