@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -604,6 +604,7 @@ def crearPiezasIntegranSubproductos():
         subProductoSeleccionado = request.json.get('subProductoSeleccionado', None)
         subProducto_ot_seleccionado = request.json.get('subProducto_ot_seleccionado', None)
         piezaSeleccionaIntegraSubproducto = request.json.get('piezaSeleccionaIntegraSubproducto', None)
+        cantidad_utilizada_por_subproducto = request.json.get('cantidad_utilizada_por_subproducto', None)
 
         verificador = PiezasIntegranSubProducto.query.filter_by(piezaSeleccionaIntegraSubproducto=piezaSeleccionaIntegraSubproducto, subProducto_ot_seleccionado=subProducto_ot_seleccionado).first()
         if verificador:
@@ -615,6 +616,8 @@ def crearPiezasIntegranSubproductos():
             return jsonify({"msg": "Falta introducir la ot del modelo"}), 400
         if not piezaSeleccionaIntegraSubproducto:
             return jsonify({"msg": "Falta introducir la pieza que integra el subproducto"}), 400
+        if not cantidad_utilizada_por_subproducto:
+            return jsonify({"msg": "Falta introducir la cantidad"}), 400
 
 
         
@@ -622,6 +625,7 @@ def crearPiezasIntegranSubproductos():
         usua.subProductoSeleccionado  = subProductoSeleccionado
         usua.subProducto_ot_seleccionado= subProducto_ot_seleccionado
         usua.piezaSeleccionaIntegraSubproducto = piezaSeleccionaIntegraSubproducto
+        usua.cantidad_utilizada_por_subproducto = cantidad_utilizada_por_subproducto
         db.session.add(usua)
         db.session.commit()
 
@@ -629,6 +633,48 @@ def crearPiezasIntegranSubproductos():
         "piezas_Sub_Producto": usua.serialize() 
     }
     return jsonify({'msg': 'piezas que integran Sub-producto agregada exitosamente'}, data),  200
+
+
+@app.route("/api/produccion", methods=['POST'])
+def produccion():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        ot_seleccionada = request.json.get('ot_seleccionada', None)
+        sub_producto_seleccionado = request.json.get('sub_producto_seleccionado', None)
+        produccion_Cantidad_fabricada = request.json.get('produccion_Cantidad_fabricada', None)
+        
+        if not ot_seleccionada:
+            return jsonify({"msg": "Falta introducir OT"}), 400
+        if not sub_producto_seleccionado:
+            return jsonify({"msg": "Falta introducir subproducto"}), 400
+        if not produccion_Cantidad_fabricada:
+            return jsonify({"msg": "Falta introducir la produccion"}), 400
+
+
+        usua = Produccion()
+        usua.ot_seleccionada = ot_seleccionada
+        usua.sub_producto_seleccionado = sub_producto_seleccionado
+        usua.produccion_Cantidad_fabricada = produccion_Cantidad_fabricada
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "produccion": usua.serialize() 
+    }
+    return jsonify({'msg': 'Produccion agregada exitosamente'}, data),  200
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -197,10 +197,11 @@ class PiezasIntegranSubProducto(db.Model):
     subProductoSeleccionado = db.Column(db.String(100), nullable = False)
     piezaSeleccionaIntegraSubproducto = db.Column(db.String(100), nullable = False)
     subProducto_ot_seleccionado = db.Column(db.Integer)
+    cantidad_utilizada_por_subproducto = db.Column(db.Integer)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"subproducto('{self.subProductoSeleccionado}', '{self.piezaSeleccionaIntegraSubproducto}', '{self.subProducto_ot_seleccionado}', '{self.date_created }')"
+        return f"subproducto('{self.subProductoSeleccionado}', '{self.piezaSeleccionaIntegraSubproducto}', '{self.cantidad_utilizada_por_subproducto}', '{self.subProducto_ot_seleccionado}', '{self.date_created }')"
 
     def serialize(self):
         return {
@@ -208,6 +209,27 @@ class PiezasIntegranSubProducto(db.Model):
             "subProductoSeleccionado": self.subProductoSeleccionado,
             "piezaSeleccionaIntegraSubproducto": self.piezaSeleccionaIntegraSubproducto,
             "subProducto_ot_seleccionado": self.subProducto_ot_seleccionado,
+            "cantidad_utilizada_por_subproducto": self.cantidad_utilizada_por_subproducto,
+            "date_created":self.date_created
+        }  
+
+class Produccion(db.Model):
+    __tablename__ = 'produccion'
+    id = db.Column(db.Integer, primary_key = True)
+    ot_seleccionada = db.Column(db.Integer)
+    sub_producto_seleccionado = db.Column(db.String(100), nullable = False)
+    produccion_Cantidad_fabricada = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"subproducto('{self.ot_seleccionada}', '{self.sub_producto_seleccionado}', '{self.produccion_Cantidad_fabricada}', '{self.date_created }')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "ot_seleccionada": self.ot_seleccionada,
+            "sub_producto_seleccionado": self.sub_producto_seleccionado,
+            "produccion_Cantidad_fabricada": self.produccion_Cantidad_fabricada,
             "date_created":self.date_created
         }  
 
