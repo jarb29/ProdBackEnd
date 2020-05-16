@@ -667,14 +667,41 @@ def produccion():
 
 
 
-
-
-
-
-
-
-
-
+# Logica para obter la tabla de piezas de pintura
+@app.route('/api/produccionDisponible', methods=['GET'])
+def produccionDisponible():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    piezas_modelo = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.all()
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = Produccion.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.produccion_Cantidad_fabricada
+                total_pieza_suma += total_pieza
+                data = {
+                        "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                        "nombre_subproducto": sub_producto_produccion.sub_producto_seleccionado,
+                        "cantidad_fabricada_por_dia": sub_producto_produccion.produccion_Cantidad_fabricada,
+                        "total pieza": total_pieza_suma,
+                         "fecha": sub_producto_produccion.date_created
+                        }
+                sub_producto_por_dia.append(data)
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": sub_producto_produccion.date_created
+                    } 
+                if (i == len(sub_productos_produccion)):
+                    sub_producto_por_dia .append(total)
+                i +=1
+                sub_producto_total[sub_producto_produccion.sub_producto_seleccionado] = sub_producto_por_dia 
+        piezas_modelo[modelo.modelo_produccion] = sub_producto_total
+    
+    return jsonify(piezas_modelo), 200
 
 
 
