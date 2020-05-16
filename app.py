@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -591,6 +591,41 @@ def lineaSubProductoDisponible(id):
     sub_Products = list(map(lambda sub_Products: sub_Products.serialize(), sub_Products))
 
     return jsonify(sub_Products), 200
+
+# Logica para crear los subProductos que integran las lineas
+@app.route("/api/creandopiezasIntegranSubProductos", methods=['POST'])
+def crearPiezasIntegranSubproductos():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        subProductoSeleccionado = request.json.get('subProductoSeleccionado', None)
+        subProducto_ot_seleccionado = request.json.get('subProducto_ot_seleccionado', None)
+        piezaSeleccionaIntegraSubproducto = request.json.get('piezaSeleccionaIntegraSubproducto', None)
+  
+
+        
+        if not subProductoSeleccionado:
+            return jsonify({"msg": "Falta introducir nombre del subproducto"}), 400
+        if not subProducto_ot_seleccionado:
+            return jsonify({"msg": "Falta introducir la ot del modelo"}), 400
+        if not piezaSeleccionaIntegraSubproducto:
+            return jsonify({"msg": "Falta introducir la pieza que integra el subproducto"}), 400
+
+
+        
+        usua = PiezasIntegranSubProducto()
+        usua.subProductoSeleccionado  = subProductoSeleccionado
+        usua.subProducto_ot_seleccionado= subProducto_ot_seleccionado
+        usua.piezaSeleccionaIntegraSubproducto = piezaSeleccionaIntegraSubproducto
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "piezas_Sub_Producto": usua.serialize() 
+    }
+    return jsonify({'msg': 'piezas que integran Sub-producto agregada exitosamente'}, data),  200
+
 
 
 

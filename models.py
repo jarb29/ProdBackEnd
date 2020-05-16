@@ -181,12 +181,32 @@ class SubProducto(db.Model):
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"subproducto('{self.Linea1NombreSubproducto}', '{self.subProducto_ot_seleccionado}', '{self.pinturaCantidadPiezas}', '{self.date_created }')"
+        return f"subproducto('{self.Linea1NombreSubproducto}', '{self.subProducto_ot_seleccionado}', '{self.date_created }')"
 
     def serialize(self):
         return {
             "id":self.id,
             "Linea1NombreSubproducto": self.Linea1NombreSubproducto,
+            "subProducto_ot_seleccionado": self.subProducto_ot_seleccionado,
+            "date_created":self.date_created
+        }  
+
+class PiezasIntegranSubProducto(db.Model):
+    __tablename__ = 'piezasIntegranSubProducto'
+    id = db.Column(db.Integer, primary_key = True)
+    subProductoSeleccionado = db.Column(db.String(100), nullable = False)
+    piezaSeleccionaIntegraSubproducto = db.Column(db.String(100), nullable = False)
+    subProducto_ot_seleccionado = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"subproducto('{self.subProductoSeleccionado}', '{self.piezaSeleccionaIntegraSubproducto}', '{self.subProducto_ot_seleccionado}', '{self.date_created }')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "subProductoSeleccionado": self.subProductoSeleccionado,
+            "piezaSeleccionaIntegraSubproducto": self.piezaSeleccionaIntegraSubproducto,
             "subProducto_ot_seleccionado": self.subProducto_ot_seleccionado,
             "date_created":self.date_created
         }  
