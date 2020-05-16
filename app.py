@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -550,6 +550,47 @@ def piezasPintadas():
         piezas_modelo[modelo.modelo_produccion] = piezas_pintadas
     
     return jsonify(piezas_modelo), 200
+
+# Logica para crear la tabla de las lineas
+@app.route("/api/creandoSubProductos", methods=['POST'])
+def crearSubproductos():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        Linea1NombreSubproducto = request.json.get('Linea1NombreSubproducto', None)
+        subProducto_ot_seleccionado = request.json.get('subProducto_ot_seleccionado', None)
+  
+
+        
+        if not Linea1NombreSubproducto:
+            return jsonify({"msg": "Falta introducir nombre del subproducto"}), 400
+        if not subProducto_ot_seleccionado:
+            return jsonify({"msg": "Falta introducir la ot del modelo"}), 400
+
+
+        
+        usua = SubProducto()
+        usua.Linea1NombreSubproducto  = Linea1NombreSubproducto 
+        usua.subProducto_ot_seleccionado= subProducto_ot_seleccionado
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "Sub_Producto": usua.serialize() 
+    }
+    return jsonify({'msg': 'Sub-producto agregada exitosamente'}, data),  200
+
+
+# Logica para Obtener subprodutos de las lineas
+
+@app.route('/api/obtenerSubproducto/<int:id>', methods=['GET'])
+def lineaSubProductoDisponible(id):
+
+    sub_Products = SubProducto.query.filter_by(subProducto_ot_seleccionado=id).all()
+    sub_Products = list(map(lambda sub_Products: sub_Products.serialize(), sub_Products))
+
+    return jsonify(sub_Products), 200
 
 
 
