@@ -551,7 +551,7 @@ def piezasPintadas():
     
     return jsonify(piezas_modelo), 200
 
-# Logica para crear la tabla de las lineas
+# Logica para crear la tabla del subProducto en las lineas
 @app.route("/api/creandoSubProductos", methods=['POST'])
 def crearSubproductos():
     if not request.is_json:
@@ -560,9 +560,11 @@ def crearSubproductos():
         
         Linea1NombreSubproducto = request.json.get('Linea1NombreSubproducto', None)
         subProducto_ot_seleccionado = request.json.get('subProducto_ot_seleccionado', None)
-  
-
         
+        verificador = SubProducto.query.filter_by(Linea1NombreSubproducto=Linea1NombreSubproducto, subProducto_ot_seleccionado=subProducto_ot_seleccionado).first()
+        if verificador:
+            return jsonify({"msg": "Sub-Producto ya fue agregado"}), 400
+
         if not Linea1NombreSubproducto:
             return jsonify({"msg": "Falta introducir nombre del subproducto"}), 400
         if not subProducto_ot_seleccionado:
@@ -602,8 +604,10 @@ def crearPiezasIntegranSubproductos():
         subProductoSeleccionado = request.json.get('subProductoSeleccionado', None)
         subProducto_ot_seleccionado = request.json.get('subProducto_ot_seleccionado', None)
         piezaSeleccionaIntegraSubproducto = request.json.get('piezaSeleccionaIntegraSubproducto', None)
-  
 
+        verificador = PiezasIntegranSubProducto.query.filter_by(piezaSeleccionaIntegraSubproducto=piezaSeleccionaIntegraSubproducto, subProducto_ot_seleccionado=subProducto_ot_seleccionado).first()
+        if verificador:
+            return jsonify({"msg": "pieza que integra el Sub-Producto ya fue agregado"}), 400
         
         if not subProductoSeleccionado:
             return jsonify({"msg": "Falta introducir nombre del subproducto"}), 400
