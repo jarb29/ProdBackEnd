@@ -805,7 +805,7 @@ def produccionPorModeloDisponible():
 
     
     
-    
+    #logica para obtener el valor mas critico
     valores_minimos_por_modelos_corte = []
     for key in modelos_tot:
         piezas_del_modelo = []
@@ -829,16 +829,46 @@ def produccionPorModeloDisponible():
             "pieza":piezas_del_modelo[indice]
             }
         valores_minimos_por_modelos_corte.append(data)
-    #print(valores_minimos_por_modelos_corte)
+    #Logica para obtener los nestics
+
+    
+    
+    programa_nest_estufa = {}
+    prueba_cortes = []
+    for modelo in modelosEnProduccion:
+        nestic_disponibles = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
+        cortes_totales_nestis =[]
+        nestic_cortados = []
+        for nestic_disponible in nestic_disponibles:
+            nestis_produccion = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion , nestic_cortado = nestic_disponible.programa_nestic).all()
+            i = 1
+            total_cortado= 0
+            
+            for nesti in nestis_produccion:
+                print(nesti, "nest")
+                print(i, "valor de i")
+                total_cortado_por_nectic = nesti.planchas_cortadas
+                total_cortado += total_cortado_por_nectic
+                if (i == len(nestis_produccion)):
+                    
+                    data = {
+                        "total_planchas_cortadas": total_cortado,
+                        "ot_produccion": modelo.ot_produccion,
+                        "nestic_produccion": nesti.nestic_cortado,
+                        "total_ot": modelo.cantidad_producir,
+                        "modelo": modelo.modelo_produccion
+                        }
+                    print(data)
+                    nestic_cortados.append(data)
+                    
+                i +=1
+            cortes_totales_nestis.append(nestic_cortados)
+        programa_nest_estufa[modelo.modelo_produccion] = nestic_cortados  
+        prueba_cortes.append(nestic_cortados)    
+                
            
 
-    return jsonify(modelos_tot, valores_minimos_por_modelos_corte), 200
-
-
-
-
-
-
+    return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes), 200
 
 if __name__ == '__main__':
     manager.run()
