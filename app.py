@@ -710,7 +710,7 @@ def produccionDisponible():
 
 
 # Logica para obter la tabla disponnible de piezas de corte
-@app.route('/api/producionporModeloDisponible', methods=['GET'])
+@app.route('/api/producionPorModeloDisponible', methods=['GET'])
 def produccionPorModeloDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
     piezas_cortadas_totales = {}
@@ -727,7 +727,8 @@ def produccionPorModeloDisponible():
                 total_pieza_suma += total_pieza
                 total ={
                     "total_por_pieza": total_pieza_suma,
-                     "ot_produccion": modelo.ot_produccion
+                     "ot_produccion": modelo.ot_produccion,
+                     "nesti": nesti.nestic_cortado,
             
                     } 
                 if (i == len(nestis)):
@@ -761,7 +762,8 @@ def produccionPorModeloDisponible():
                    
                         data_total_pieza ={
                             "ot_produccion": sub_producto_produccion.ot_seleccionada,
-                            "total_por_pieza": numero_de_pieza_por_subpro 
+                            "total_por_pieza": numero_de_pieza_por_subpro,
+                            "fecha": sub_producto_produccion.date_created
                             }
                         #sub_producto_por_dia.append(data_total_pieza)
                         sub_producto_total[pieza.piezaSeleccionaIntegraSubproducto] = data_total_pieza
@@ -773,7 +775,7 @@ def produccionPorModeloDisponible():
     
     modelos_tot = {}
     for keys_corte in piezas_cortadas_totales:
-        print(keys_corte)
+      
         for keys_prod in piezas_modelo_produccion:
             if keys_corte == keys_prod:
 
@@ -785,12 +787,21 @@ def produccionPorModeloDisponible():
                             pieza = []
                             for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
                                 for keys_final_corte in piezas_cortadas_totales[keys_prod][key_despues_prod]:
-                                    if keys_final_produc  == keys_final_corte:
                                     
+                                    if keys_final_produc  == keys_final_corte:
+
                                         total_disponible = piezas_cortadas_totales[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
-                                        pieza.append(total_disponible)
-                                        cantidad_dispoble[key_despues_corte] =  total_disponible            
-                                modelos_tot[keys_corte] = cantidad_dispoble
+                                      
+                                        total = {
+                                            "total_disponlie": total_disponible,
+                                            "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
+                                            "OT": piezas_modelo_produccion[keys_prod][key_despues_prod]['ot_produccion'],
+                                            "nest": piezas_cortadas_totales[keys_prod][key_despues_prod]['nesti']
+                                        }
+
+                            pieza.append(total)
+                            cantidad_dispoble[key_despues_corte] =  pieza            
+                            modelos_tot[keys_corte] = cantidad_dispoble
 
     return jsonify(modelos_tot), 200
 
