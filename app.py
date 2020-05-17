@@ -803,7 +803,36 @@ def produccionPorModeloDisponible():
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_tot[keys_corte] = cantidad_dispoble
 
-    return jsonify(modelos_tot), 200
+    
+    
+    
+    valores_minimos_por_modelos_corte = []
+    for key in modelos_tot:
+        piezas_del_modelo = []
+        valores_de_piezas = []
+        nestic_del_valor = []
+        print(key)
+        for key_in in modelos_tot[key]:
+            
+        
+            piezas_del_modelo.append(key_in)
+            for key_sec in modelos_tot[key][key_in]:
+                valores_de_piezas.append(key_sec['total_disponlie'])
+                nestic_del_valor.append(key_sec['nest'])
+        a = min(valores_de_piezas)
+        #print(a)
+        indice = valores_de_piezas.index(a)
+        data = {
+            "valor_minimo": a,
+            "modelo": key,
+            "nestic": nestic_del_valor[indice],
+            "pieza":piezas_del_modelo[indice]
+            }
+        valores_minimos_por_modelos_corte.append(data)
+    #print(valores_minimos_por_modelos_corte)
+           
+
+    return jsonify(modelos_tot, valores_minimos_por_modelos_corte), 200
 
 
 
