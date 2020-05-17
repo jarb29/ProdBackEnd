@@ -634,7 +634,7 @@ def crearPiezasIntegranSubproductos():
     }
     return jsonify({'msg': 'piezas que integran Sub-producto agregada exitosamente'}, data),  200
 
-
+# Agregando la produccion Logica 
 @app.route("/api/produccion", methods=['POST'])
 def produccion():
     if not request.is_json:
@@ -651,6 +651,11 @@ def produccion():
             return jsonify({"msg": "Falta introducir subproducto"}), 400
         if not produccion_Cantidad_fabricada:
             return jsonify({"msg": "Falta introducir la produccion"}), 400
+        
+        verificador = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = ot_seleccionada, subProductoSeleccionado = sub_producto_seleccionado).first()
+        
+        if not verificador:
+            return jsonify({"msg": "Tiene que agregar piezas al sub-producto antes de cargar produccion"}), 400
 
 
         usua = Produccion()
@@ -667,7 +672,7 @@ def produccion():
 
 
 
-# Logica para obter la tabla de piezas de pintura
+# Logica para obter la tabla de produccion disponibles
 @app.route('/api/produccionDisponible', methods=['GET'])
 def produccionDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
@@ -687,7 +692,7 @@ def produccionDisponible():
                         "ot_produccion": sub_producto_produccion.ot_seleccionada,
                         "nombre_subproducto": sub_producto_produccion.sub_producto_seleccionado,
                         "cantidad_fabricada_por_dia": sub_producto_produccion.produccion_Cantidad_fabricada,
-                        "total pieza": total_pieza_suma,
+                        "total_pieza": total_pieza_suma,
                          "fecha": sub_producto_produccion.date_created
                         }
                 sub_producto_por_dia.append(data)
@@ -703,6 +708,66 @@ def produccionDisponible():
     
     return jsonify(piezas_modelo), 200
 
+
+# Logica para obter la tabla disponnible de piezas de corte
+@app.route('/api/producionporModeloDisponible', methods=['GET'])
+def produccionPorModeloDisponible():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    piezas_cortadas_totales = {}
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_cortadas = {}
+        for pieza in piezas:
+            pieza_nestic = []
+            total_pieza_suma = 0 
+            nestis = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado=pieza.nesticElegido).all()
+            i = 1
+            for nesti in nestis:
+                total_pieza = pieza.cantidadPiezasPorPlancha*nesti.planchas_cortadas
+                total_pieza_suma += total_pieza
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": nesti.date_created
+                    } 
+                if (i == len(nestis)):
+                    pieza_nestic.append(total)
+                i +=1
+                piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
+        piezas_cortadas_totales[modelo.modelo_produccion] = piezas_cortadas
+
+    
+    piezas_modelo_produccion = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion).all()
+      
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = Produccion.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+      
+
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.produccion_Cantidad_fabricada
+                total_pieza_suma += total_pieza
+                if (i == len(sub_productos_produccion)):
+                  
+                    piezas_por_produccion = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion, subProductoSeleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
+         
+                    for pieza in piezas_por_produccion:
+                        numero_de_pieza_por_subpro = pieza.cantidad_utilizada_por_subproducto * total_pieza_suma
+                   
+                        data_total_pieza ={
+                            "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                            "nombre_pieza": pieza.piezaSeleccionaIntegraSubproducto,
+                            "total_por_pieza": numero_de_pieza_por_subpro 
+                            }
+                        #sub_producto_por_dia.append(data_total_pieza)
+                        sub_producto_total[pieza.piezaSeleccionaIntegraSubproducto] = data_total_pieza
+                i +=1            
+        piezas_modelo_produccion[modelo.modelo_produccion] = sub_producto_total
+    return jsonify(piezas_cortadas_totales, piezas_modelo_produccion), 200
 
 
 
