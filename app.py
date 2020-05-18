@@ -575,10 +575,34 @@ def piezasPlegadas():
                             pieza.append(total)
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_tot[keys_corte] = cantidad_dispoble
- 
-
-
     
+       #logica para obtener el valor mas critico
+    valores_minimos_por_modelos_plegado = []
+    for key in modelos_tot:
+        piezas_del_modelo = []
+        valores_de_piezas = []
+
+        orden_trabajo = []
+        for key_in in modelos_tot[key]:
+            
+        
+            piezas_del_modelo.append(key_in)
+            for key_sec in modelos_tot[key][key_in]:
+                valores_de_piezas.append(key_sec['total_disponlie'])
+      
+                orden_trabajo.append(key_sec['OT'])
+                #print(modelos_tot[key][key_in], "buscando la OT")
+        a = min(valores_de_piezas)
+        #print(a)
+        indice = valores_de_piezas.index(a)
+        data = {
+            "valor_minimo": a,
+            "modelo": key,
+ 
+            "pieza": piezas_del_modelo[indice],
+            "Ot": orden_trabajo[indice]
+            }
+        valores_minimos_por_modelos_plegado.append(data)
 
 
 
@@ -590,7 +614,7 @@ def piezasPlegadas():
 
 
 
-    return jsonify(piezas_modelo, modelos_tot), 200
+    return jsonify(piezas_modelo, modelos_tot, valores_minimos_por_modelos_plegado), 200
 
 
 # Logica para crear la tabla de piezas de pintura
