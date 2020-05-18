@@ -442,6 +442,8 @@ def crearPiezasPlegado():
     }
     return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}, data),  200
 
+
+# logica para las piezas fabricadas en plegado
 @app.route('/api/piezasPlegadas', methods=['GET'])
 def piezasPlegadas():
     modelosEnProduccion = ModeloProduccion.query.all()
@@ -477,8 +479,118 @@ def piezasPlegadas():
                 i +=1
                 piezas_plegadas[pieza.nombre_pieza] = pieza_plegado 
         piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
+
+# Logica para obtener la cantidad de peizas disponibles (Plegado - usado) primera parte (usado)
+
+
+    piezas_modelo_plegado = {}
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_plegadas = {}
+        for pieza in piezas:
+            pieza_plegado = []
+            total_pieza_suma = 0 
+            piezas_en_plegado = Plegado.query.filter_by(plegado_ot_seleccionado = modelo.ot_produccion, plegadoPiezaSeleccionada=pieza.nombre_pieza).all()
+            i = 1
+            for pieza_en_plegado in piezas_en_plegado:
+                total_pieza = pieza_en_plegado.plegadoCantidadPiezas
+                total_pieza_suma += total_pieza
+                total ={
+                    "ot_produccion": modelo.ot_produccion,
+                    "total_por_pieza": total_pieza_suma,
+                    "fecha": pieza_en_plegado.date_created
+                    } 
+                if (i == len(piezas_en_plegado)):
+                    pieza_plegado.append(total)
+                i +=1
+                piezas_plegadas[pieza.nombre_pieza] = total
+        piezas_modelo_plegado[modelo.modelo_produccion] = piezas_plegadas
+
+    # Logica para obtener la cantidad de peizas disponibles (Plegado - usado) primera parte (usado)
+
+    piezas_modelo_produccion = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion).all()
+      
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = Produccion.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+      
+
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.produccion_Cantidad_fabricada
+                total_pieza_suma += total_pieza
+                if (i == len(sub_productos_produccion)):
+                  
+                    piezas_por_produccion = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion, subProductoSeleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
+         
+                    for pieza in piezas_por_produccion:
+                        numero_de_pieza_por_subpro = pieza.cantidad_utilizada_por_subproducto * total_pieza_suma
+                   
+                        data_total_pieza ={
+                            "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                            "total_por_pieza": numero_de_pieza_por_subpro,
+                            "fecha": sub_producto_produccion.date_created
+                            }
+                        #sub_producto_por_dia.append(data_total_pieza)
+                        sub_producto_total[pieza.piezaSeleccionaIntegraSubproducto] = data_total_pieza
+                i +=1            
+        piezas_modelo_produccion[modelo.modelo_produccion] = sub_producto_total
+
+ #Logica para obtener la cantidad de peizas disponibles (plegado - usado) segunda parte (plegado)
+    modelos_tot = {}
     
-    return jsonify(piezas_modelo), 200
+    for keys_corte in piezas_modelo_plegado:
+        #print(piezas_modelo_produccion)
+        for keys_prod in piezas_modelo_produccion:
+            if keys_corte == keys_prod:
+               
+                cantidad_dispoble={}
+                for key_despues_corte in piezas_modelo_plegado[keys_corte]:
+                    for key_despues_prod in piezas_modelo_produccion[keys_corte]:
+                        if key_despues_corte == key_despues_prod:
+                            
+                            pieza = []
+                            for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
+                                for keys_final_corte in piezas_modelo_plegado[keys_prod][key_despues_prod]:
+                                    #pprint(keys_final_produc, "lo que llega de modelo")
+                                    #pprint(keys_final_corte)
+                                    if keys_final_produc  == keys_final_corte:
+                                        
+                                        total_disponible = piezas_modelo_plegado[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
+                                        
+                                        #print(keys_final_corte["total_por_pieza"], "lo que llega de usado")
+                                        #print(piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"], "lo que se corte")
+                                        #pprint(total_disponible)
+                                        total = {
+                                            "total_disponlie": total_disponible,
+                                            "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
+                                            "OT": piezas_modelo_produccion[keys_prod][key_despues_prod]['ot_produccion']
+                                        }
+                                        
+
+                            pieza.append(total)
+                            cantidad_dispoble[key_despues_corte] =  pieza            
+                            modelos_tot[keys_corte] = cantidad_dispoble
+ 
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    return jsonify(piezas_modelo, modelos_tot), 200
 
 
 # Logica para crear la tabla de piezas de pintura
@@ -737,7 +849,7 @@ def produccionPorModeloDisponible():
                 piezas_cortadas[pieza.nombre_pieza] = total
         piezas_cortadas_totales[modelo.modelo_produccion] = piezas_cortadas
 
-    
+    #Logica para obtener la cantidad de peizas disponibles (cortado - usado) primera parte (usado)
     piezas_modelo_produccion = {}
     for modelo in modelosEnProduccion:
         sub_productos = SubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion).all()
@@ -772,7 +884,7 @@ def produccionPorModeloDisponible():
     
 
    
-    
+    #Logica para obtener la cantidad de peizas disponibles (cortado - usado) segunda parte (cortado)
     modelos_tot = {}
     for keys_corte in piezas_cortadas_totales:
       
@@ -811,7 +923,7 @@ def produccionPorModeloDisponible():
         piezas_del_modelo = []
         valores_de_piezas = []
         nestic_del_valor = []
-        print(key)
+        orden_trabajo = []
         for key_in in modelos_tot[key]:
             
         
@@ -819,6 +931,8 @@ def produccionPorModeloDisponible():
             for key_sec in modelos_tot[key][key_in]:
                 valores_de_piezas.append(key_sec['total_disponlie'])
                 nestic_del_valor.append(key_sec['nest'])
+                orden_trabajo.append(key_sec['OT'])
+                #print(modelos_tot[key][key_in], "buscando la OT")
         a = min(valores_de_piezas)
         #print(a)
         indice = valores_de_piezas.index(a)
@@ -826,13 +940,14 @@ def produccionPorModeloDisponible():
             "valor_minimo": a,
             "modelo": key,
             "nestic": nestic_del_valor[indice],
-            "pieza":piezas_del_modelo[indice]
+            "pieza": piezas_del_modelo[indice],
+            "Ot": orden_trabajo[indice]
             }
         valores_minimos_por_modelos_corte.append(data)
-    #Logica para obtener los nestics
+    
 
     
-    
+    #Logica para obtener la cantidad de planchas cortadas por nestics
     programa_nest_estufa = {}
     prueba_cortes = []
     for modelo in modelosEnProduccion:
@@ -845,8 +960,7 @@ def produccionPorModeloDisponible():
             total_cortado= 0
             
             for nesti in nestis_produccion:
-                print(nesti, "nest")
-                print(i, "valor de i")
+       
                 total_cortado_por_nectic = nesti.planchas_cortadas
                 total_cortado += total_cortado_por_nectic
                 if (i == len(nestis_produccion)):
@@ -858,17 +972,39 @@ def produccionPorModeloDisponible():
                         "total_ot": modelo.cantidad_producir,
                         "modelo": modelo.modelo_produccion
                         }
-                    print(data)
+      
                     nestic_cortados.append(data)
                     
                 i +=1
             cortes_totales_nestis.append(nestic_cortados)
         programa_nest_estufa[modelo.modelo_produccion] = nestic_cortados  
-        prueba_cortes.append(nestic_cortados)    
+        prueba_cortes.append(nestic_cortados)
+
+
+ #Logica para obtener la cantidad de estufas minimas a fabricar
+    disponibilidad_fabricacion = []
+    for values  in valores_minimos_por_modelos_corte:
+
+        piezas_cantidad_usada_estufa = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = values["Ot"], piezaSeleccionaIntegraSubproducto = values["pieza"]).first()
+        disponibilidad = round(values["valor_minimo"] / piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto)
+
+        data = {
+            "ot":  piezas_cantidad_usada_estufa.subProducto_ot_seleccionado,
+            "pieza": piezas_cantidad_usada_estufa.piezaSeleccionaIntegraSubproducto,
+            "valor_minimo":values["valor_minimo"],
+            "modelo": values["modelo"],
+            "nestic": values["nestic"],
+            "cantidad_usada_por_subproducto": piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto,
+            "sub_producto": piezas_cantidad_usada_estufa.subProductoSeleccionado,
+            "disponibilidad_estufas": disponibilidad
+
+        }
+        disponibilidad_fabricacion.append(data)
+       
                 
            
 
-    return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes), 200
+    return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes, disponibilidad_fabricacion), 200
 
 if __name__ == '__main__':
     manager.run()
