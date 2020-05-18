@@ -576,7 +576,7 @@ def piezasPlegadas():
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_tot[keys_corte] = cantidad_dispoble
     
-       #logica para obtener el valor mas critico
+#logica para obtener el valor mas critico por pieza
     valores_minimos_por_modelos_plegado = []
     for key in modelos_tot:
         piezas_del_modelo = []
@@ -607,6 +607,25 @@ def piezasPlegadas():
 
 
 
+ #Logica para obtener la cantidad de estufas minimas a fabricar
+    disponibilidad_fabricacion = []
+    for values  in valores_minimos_por_modelos_plegado:
+
+        piezas_cantidad_usada_estufa = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = values["Ot"], piezaSeleccionaIntegraSubproducto = values["pieza"]).first()
+        disponibilidad = round(values["valor_minimo"] / piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto)
+
+        data = {
+            "ot":  piezas_cantidad_usada_estufa.subProducto_ot_seleccionado,
+            "pieza": piezas_cantidad_usada_estufa.piezaSeleccionaIntegraSubproducto,
+            "valor_minimo":values["valor_minimo"],
+            "modelo": values["modelo"],
+            "cantidad_usada_por_subproducto": piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto,
+            "sub_producto": piezas_cantidad_usada_estufa.subProductoSeleccionado,
+            "disponibilidad_estufas": disponibilidad
+
+        }
+        disponibilidad_fabricacion.append(data)
+       
 
 
 
@@ -614,7 +633,7 @@ def piezasPlegadas():
 
 
 
-    return jsonify(piezas_modelo, modelos_tot, valores_minimos_por_modelos_plegado), 200
+    return jsonify(piezas_modelo, modelos_tot, valores_minimos_por_modelos_plegado, disponibilidad_fabricacion), 200
 
 
 # Logica para crear la tabla de piezas de pintura
