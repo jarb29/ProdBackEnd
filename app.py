@@ -480,7 +480,7 @@ def piezasPlegadas():
                 piezas_plegadas[pieza.nombre_pieza] = pieza_plegado 
         piezas_modelo[modelo.modelo_produccion] = piezas_plegadas
 
-# Logica para obtener la cantidad de peizas disponibles (Plegado - usado) primera parte (usado)
+# Logica para obtener la cantidad de peizas disponibles (hechas)
 
 
     piezas_modelo_plegado = {}
@@ -570,11 +570,10 @@ def piezasPlegadas():
                                             "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
                                             "OT": piezas_modelo_produccion[keys_prod][key_despues_prod]['ot_produccion']
                                         }
-                                        
-
                             pieza.append(total)
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_tot[keys_corte] = cantidad_dispoble
+
     
 #logica para obtener el valor mas critico por pieza
     valores_minimos_por_modelos_plegado = []
@@ -625,15 +624,17 @@ def piezasPlegadas():
 
         }
         disponibilidad_fabricacion.append(data)
-       
-
-
-
-
-
-
 
     return jsonify(piezas_modelo, modelos_tot, valores_minimos_por_modelos_plegado, disponibilidad_fabricacion), 200
+
+
+
+
+
+
+
+
+
 
 
 # Logica para crear la tabla de piezas de pintura
@@ -704,7 +705,174 @@ def piezasPintadas():
                 piezas_pintadas[pieza.nombre_pieza] = pieza_pintura
         piezas_modelo[modelo.modelo_produccion] = piezas_pintadas
     
-    return jsonify(piezas_modelo), 200
+
+# Logica para obtener la cantidad de piezas disponibles (hechas)
+    piezas_modelo_pintadas = {}
+    for modelo in modelosEnProduccion:
+        piezas = Piezas.query.all()
+        piezas_pintadas_hechas = {}
+        for pieza in piezas:
+            pieza_pintadas = []
+            total_pieza_suma = 0 
+            piezas_en_pintura = Pintura.query.filter_by(pintura_ot_seleccionado = modelo.ot_produccion, pinturaPiezaSeleccionada=pieza.nombre_pieza).all()
+            i = 1
+            for pieza_en_pintura in piezas_en_pintura:
+                total_pieza = pieza_en_pintura.pinturaCantidadPiezas
+                total_pieza_suma += total_pieza
+                total ={
+                    "ot_produccion": modelo.ot_produccion,
+                    "total_por_pieza": total_pieza_suma,
+                    "fecha": pieza_en_pintura.date_created
+                    } 
+                if (i == len(piezas_en_pintura)):
+                    pieza_pintadas.append(total)
+                i +=1
+                piezas_pintadas_hechas[pieza.nombre_pieza] = total
+        piezas_modelo_pintadas[modelo.modelo_produccion] = piezas_pintadas_hechas
+
+
+# Logica para obtener la cantidad de piezas disponibles (Pintadas - usado) primera parte (usado)
+
+    piezas_modelo_produccion = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion).all()
+      
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = Produccion.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+      
+
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.produccion_Cantidad_fabricada
+                total_pieza_suma += total_pieza
+                if (i == len(sub_productos_produccion)):
+                  
+                    piezas_por_produccion = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion, subProductoSeleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
+         
+                    for pieza in piezas_por_produccion:
+                        numero_de_pieza_por_subpro = pieza.cantidad_utilizada_por_subproducto * total_pieza_suma
+                   
+                        data_total_pieza ={
+                            "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                            "total_por_pieza": numero_de_pieza_por_subpro,
+                            "fecha": sub_producto_produccion.date_created
+                            }
+                        #sub_producto_por_dia.append(data_total_pieza)
+                        sub_producto_total[pieza.piezaSeleccionaIntegraSubproducto] = data_total_pieza
+                i +=1            
+        piezas_modelo_produccion[modelo.modelo_produccion] = sub_producto_total
+
+
+#Logica para obtener la cantidad de peizas disponibles (Pintadas - usado) segunda parte (Pintadas)
+    modelos_tot = {}
+    
+    for keys_corte in piezas_modelo_pintadas:
+        #print(piezas_modelo_produccion)
+        for keys_prod in piezas_modelo_produccion:
+            if keys_corte == keys_prod:
+               
+                cantidad_dispoble={}
+                for key_despues_corte in piezas_modelo_pintadas[keys_corte]:
+                    for key_despues_prod in piezas_modelo_produccion[keys_corte]:
+                        if key_despues_corte == key_despues_prod:
+                            
+                            pieza = []
+                            for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
+                                for keys_final_corte in piezas_modelo_pintadas[keys_prod][key_despues_prod]:
+                                    #pprint(keys_final_produc, "lo que llega de modelo")
+                                    #pprint(keys_final_corte)
+                                    if keys_final_produc  == keys_final_corte:
+                                        
+                                        total_disponible = piezas_modelo_pintadas[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
+                                        
+                                        #print(keys_final_corte["total_por_pieza"], "lo que llega de usado")
+                                        #print(piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"], "lo que se corte")
+                                        #pprint(total_disponible)
+                                        total = {
+                                            "total_disponlie": total_disponible,
+                                            "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
+                                            "OT": piezas_modelo_produccion[keys_prod][key_despues_prod]['ot_produccion']
+                                        }
+                            pieza.append(total)
+                            cantidad_dispoble[key_despues_corte] =  pieza            
+                            modelos_tot[keys_corte] = cantidad_dispoble
+
+
+#logica para obtener el valor mas critico por pieza
+    valores_minimos_por_modelos_plegado = []
+    for key in modelos_tot:
+        piezas_del_modelo = []
+        valores_de_piezas = []
+
+        orden_trabajo = []
+        for key_in in modelos_tot[key]:
+            
+        
+            piezas_del_modelo.append(key_in)
+            for key_sec in modelos_tot[key][key_in]:
+                valores_de_piezas.append(key_sec['total_disponlie'])
+      
+                orden_trabajo.append(key_sec['OT'])
+                #print(modelos_tot[key][key_in], "buscando la OT")
+        a = min(valores_de_piezas)
+        #print(a)
+        indice = valores_de_piezas.index(a)
+        data = {
+            "valor_minimo": a,
+            "modelo": key,
+ 
+            "pieza": piezas_del_modelo[indice],
+            "Ot": orden_trabajo[indice]
+            }
+        valores_minimos_por_modelos_plegado.append(data)
+
+
+
+
+ #Logica para obtener la cantidad de estufas minimas a fabricar
+    disponibilidad_fabricacion = []
+    for values  in valores_minimos_por_modelos_plegado:
+
+        piezas_cantidad_usada_estufa = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = values["Ot"], piezaSeleccionaIntegraSubproducto = values["pieza"]).first()
+        disponibilidad = round(values["valor_minimo"] / piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto)
+
+        data = {
+            "ot":  piezas_cantidad_usada_estufa.subProducto_ot_seleccionado,
+            "pieza": piezas_cantidad_usada_estufa.piezaSeleccionaIntegraSubproducto,
+            "valor_minimo":values["valor_minimo"],
+            "modelo": values["modelo"],
+            "cantidad_usada_por_subproducto": piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto,
+            "sub_producto": piezas_cantidad_usada_estufa.subProductoSeleccionado,
+            "disponibilidad_estufas": disponibilidad
+
+        }
+        disponibilidad_fabricacion.append(data)
+
+
+
+
+
+
+
+
+
+
+
+    return jsonify(piezas_modelo, modelos_tot, valores_minimos_por_modelos_plegado, disponibilidad_fabricacion), 200
+
+
+
+
+
+
+
+
+
+
+
 
 # Logica para crear la tabla del subProducto en las lineas
 @app.route("/api/creandoSubProductos", methods=['POST'])
