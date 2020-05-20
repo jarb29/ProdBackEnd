@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado, ProduccionProductoTerminado
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -463,6 +463,7 @@ def productoTerminado():
         verificador = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
         if verificador:
             return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
+        print(verificador, "verificador")
 
         usua = PiezasIntegranProductoTerminado()
         usua.ot_seleccionada = ot_seleccionada
@@ -474,6 +475,7 @@ def productoTerminado():
     data = {
         "producto_terminado": usua.serialize() 
     }
+    print(data, "data ")
     return jsonify({'msg': 'Produccion agregada exitosamente'}),  200
 
 
@@ -1220,6 +1222,94 @@ def produccionPorModeloDisponible():
         disponibilidad_fabricacion.append(data)
        
     return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes, disponibilidad_fabricacion), 200
+
+
+# Agregando la produccion terminada logica
+@app.route("/api/produccionproductoterminado", methods=['POST'])
+def produccionProductoTerminado():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        ot_seleccionada = request.json.get('ot_seleccionada', None)
+        sub_producto_seleccionado = request.json.get('sub_producto_seleccionado', None)
+        producto_terminado_utilizado_estufa = request.json.get('producto_terminado_utilizado_estufa', None)
+        
+        if not ot_seleccionada:
+            return jsonify({"msg": "Falta introducir OT"}), 400
+        if not sub_producto_seleccionado:
+            return jsonify({"msg": "Falta introducir subproducto"}), 400
+        if not producto_terminado_utilizado_estufa:
+            return jsonify({"msg": "Falta introducir la cantidad terminada"}), 400
+        
+        verificador = ProduccionProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
+        if verificador:
+            return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
+        print(verificador, "verificador")
+
+        usua = ProduccionProductoTerminado()
+        usua.ot_seleccionada = ot_seleccionada
+        usua.sub_producto_seleccionado = sub_producto_seleccionado
+        usua.producto_terminado_utilizado_estufa = producto_terminado_utilizado_estufa
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "producto_terminado": usua.serialize() 
+    }
+    print(data, "data ")
+    return jsonify({'msg': 'Produccion agregada exitosamente'}),  200
+
+
+
+# Logica para obter la tabla de produccion producto terminado disponibles
+@app.route('/api/produccionprductoterminadoDisponible', methods=['GET'])
+def produccionProductoTermiandoDisponible():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    piezas_modelo = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.all()
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.producto_terminado_utilizado_estufa
+                total_pieza_suma += total_pieza
+                data = {
+                        "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                        "nombre_subproducto": sub_producto_produccion.sub_producto_seleccionado,
+                        "cantidad_fabricada_por_dia": sub_producto_produccion.producto_terminado_utilizado_estufa,
+                        "total_pieza": total_pieza_suma,
+                         "fecha": sub_producto_produccion.date_created
+                        }
+                sub_producto_por_dia.append(data)
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": sub_producto_produccion.date_created
+                    } 
+                if (i == len(sub_productos_produccion)):
+                    sub_producto_por_dia .append(total)
+                i +=1
+                sub_producto_total[sub_producto_produccion.sub_producto_seleccionado] = sub_producto_por_dia 
+        piezas_modelo[modelo.modelo_produccion] = sub_producto_total
+
+        print(piezas_modelo)
+    return jsonify(piezas_modelo), 200
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     manager.run()
