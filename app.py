@@ -443,6 +443,42 @@ def crearPiezasPlegado():
     return jsonify({'msg': 'Modelo a produccion agregada exitosamente'}, data),  200
 
 
+# Agregando la produccion terminada logica
+@app.route("/api/productoterminado", methods=['POST'])
+def productoTerminado():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        ot_seleccionada = request.json.get('ot_seleccionada', None)
+        sub_producto_seleccionado = request.json.get('sub_producto_seleccionado', None)
+        producto_terminado_utilizado_estufa = request.json.get('producto_terminado_utilizado_estufa', None)
+        
+        if not ot_seleccionada:
+            return jsonify({"msg": "Falta introducir OT"}), 400
+        if not sub_producto_seleccionado:
+            return jsonify({"msg": "Falta introducir subproducto"}), 400
+        if not producto_terminado_utilizado_estufa:
+            return jsonify({"msg": "Falta introducir la cantidad terminada"}), 400
+        
+        verificador = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
+        if verificador:
+            return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
+
+        usua = PiezasIntegranProductoTerminado()
+        usua.ot_seleccionada = ot_seleccionada
+        usua.sub_producto_seleccionado = sub_producto_seleccionado
+        usua.producto_terminado_utilizado_estufa = producto_terminado_utilizado_estufa
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "producto_terminado": usua.serialize() 
+    }
+    return jsonify({'msg': 'Produccion agregada exitosamente'}),  200
+
+
+
+
 # logica para las piezas fabricadas en plegado
 @app.route('/api/piezasPlegadas', methods=['GET'])
 def piezasPlegadas():
@@ -1184,44 +1220,6 @@ def produccionPorModeloDisponible():
         disponibilidad_fabricacion.append(data)
        
     return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes, disponibilidad_fabricacion), 200
-
-
-
-# Agregando la produccion terminada logica
-@app.route("/api/productoterminado", methods=['POST'])
-def productoTerminado():
-    if not request.is_json:
-        return jsonify({"msg": "Missing JSON in request"}), 400
-    if request.method == 'POST':
-        
-        ot_seleccionada = request.json.get('ot_seleccionada', None)
-        sub_producto_seleccionado = request.json.get('sub_producto_seleccionado', None)
-        producto_terminado_utilizado_estufa = request.json.get('producto_terminado_utilizado_estufa', None)
-        
-        if not ot_seleccionada:
-            return jsonify({"msg": "Falta introducir OT"}), 400
-        if not sub_producto_seleccionado:
-            return jsonify({"msg": "Falta introducir subproducto"}), 400
-        if not producto_terminado_utilizado_estufa:
-            return jsonify({"msg": "Falta introducir la cantidad terminada"}), 400
-        
-        verificador = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
-        if verificador:
-            return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
-
-
-        usua = PiezasIntegranProductoTerminado()
-        usua.ot_seleccionada = ot_seleccionada
-        usua.sub_producto_seleccionado = sub_producto_seleccionado
-        usua.producto_terminado_utilizado_estufa = producto_terminado_utilizado_estufa
-        db.session.add(usua)
-        db.session.commit()
-
-    data = {
-        "producto_terminado": usua.serialize() 
-    }
-    return jsonify({'msg': 'Produccion agregada exitosamente'}, data),  200
-
 
 if __name__ == '__main__':
     manager.run()
