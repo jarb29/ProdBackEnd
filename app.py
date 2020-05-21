@@ -463,7 +463,6 @@ def productoTerminado():
         verificador = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
         if verificador:
             return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
-        print(verificador, "verificador")
 
         usua = PiezasIntegranProductoTerminado()
         usua.ot_seleccionada = ot_seleccionada
@@ -475,7 +474,6 @@ def productoTerminado():
     data = {
         "producto_terminado": usua.serialize() 
     }
-    print(data, "data ")
     return jsonify({'msg': 'Produccion agregada exitosamente'}),  200
 
 
@@ -573,7 +571,7 @@ def piezasPlegadas():
                             "total_por_pieza": numero_de_pieza_por_subpro,
                             "fecha": sub_producto_produccion.date_created
                             }
-                        #sub_producto_por_dia.append(data_total_pieza)
+      
                         sub_producto_total[pieza.piezaSeleccionaIntegraSubproducto] = data_total_pieza
                 i +=1            
         piezas_modelo_produccion[modelo.modelo_produccion] = sub_producto_total
@@ -582,7 +580,6 @@ def piezasPlegadas():
     modelos_tot = {}
     
     for keys_corte in piezas_modelo_plegado:
-        #print(piezas_modelo_produccion)
         for keys_prod in piezas_modelo_produccion:
             if keys_corte == keys_prod:
                
@@ -594,15 +591,11 @@ def piezasPlegadas():
                             pieza = []
                             for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
                                 for keys_final_corte in piezas_modelo_plegado[keys_prod][key_despues_prod]:
-                                    #pprint(keys_final_produc, "lo que llega de modelo")
-                                    #pprint(keys_final_corte)
+
                                     if keys_final_produc  == keys_final_corte:
                                         
                                         total_disponible = piezas_modelo_plegado[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
                                         
-                                        #print(keys_final_corte["total_por_pieza"], "lo que llega de usado")
-                                        #print(piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"], "lo que se corte")
-                                        #pprint(total_disponible)
                                         total = {
                                             "total_disponlie": total_disponible,
                                             "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
@@ -628,9 +621,7 @@ def piezasPlegadas():
                 valores_de_piezas.append(key_sec['total_disponlie'])
       
                 orden_trabajo.append(key_sec['OT'])
-                #print(modelos_tot[key][key_in], "buscando la OT")
         a = min(valores_de_piezas)
-        #print(a)
         indice = valores_de_piezas.index(a)
         data = {
             "valor_minimo": a,
@@ -799,7 +790,6 @@ def piezasPintadas():
     modelos_tot = {}
     
     for keys_corte in piezas_modelo_pintadas:
-        #print(piezas_modelo_produccion)
         for keys_prod in piezas_modelo_produccion:
             if keys_corte == keys_prod:
                
@@ -811,15 +801,11 @@ def piezasPintadas():
                             pieza = []
                             for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
                                 for keys_final_corte in piezas_modelo_pintadas[keys_prod][key_despues_prod]:
-                                    #pprint(keys_final_produc, "lo que llega de modelo")
-                                    #pprint(keys_final_corte)
+                             
                                     if keys_final_produc  == keys_final_corte:
                                         
                                         total_disponible = piezas_modelo_pintadas[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
-                                        
-                                        #print(keys_final_corte["total_por_pieza"], "lo que llega de usado")
-                                        #print(piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"], "lo que se corte")
-                                        #pprint(total_disponible)
+                       
                                         total = {
                                             "total_disponlie": total_disponible,
                                             "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
@@ -845,9 +831,9 @@ def piezasPintadas():
                 valores_de_piezas.append(key_sec['total_disponlie'])
       
                 orden_trabajo.append(key_sec['OT'])
-                #print(modelos_tot[key][key_in], "buscando la OT")
+
         a = min(valores_de_piezas)
-        #print(a)
+
         indice = valores_de_piezas.index(a)
         data = {
             "valor_minimo": a,
@@ -1152,9 +1138,8 @@ def produccionPorModeloDisponible():
                 valores_de_piezas.append(key_sec['total_disponlie'])
                 nestic_del_valor.append(key_sec['nest'])
                 orden_trabajo.append(key_sec['OT'])
-                #print(modelos_tot[key][key_in], "buscando la OT")
+
         a = min(valores_de_piezas)
-        #print(a)
         indice = valores_de_piezas.index(a)
         data = {
             "valor_minimo": a,
@@ -1251,7 +1236,6 @@ def produccionProductoTerminado():
     data = {
         "producto_terminado": usua.serialize() 
     }
-    print(data, "data ")
     return jsonify({'msg': 'Produccion agregada exitosamente'}),  200
 
 
@@ -1356,34 +1340,55 @@ def produccionProductoTermiandoDisponible():
 
     modelos_total_producto_terminado = {}
     for keys_corte in piezas_modelo_soldadura:
-      
         for keys_prod in piezas_modelo_produccion_terminada:
             if keys_corte == keys_prod:
 
                 cantidad_dispoble={}
                 for key_despues_corte in piezas_modelo_soldadura[keys_corte]:
                     for key_despues_prod in piezas_modelo_produccion_terminada[keys_corte]:
-                        if key_despues_corte == key_despues_prod:
 
+                        if key_despues_corte == key_despues_prod:
                             pieza = []
+
                             for keys_final_produc in piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]:
                                 for keys_final_corte in piezas_modelo_soldadura[keys_prod][key_despues_prod]:
 
-                      
                                     if keys_final_produc  == keys_final_corte:
-
                                         total_disponible = piezas_modelo_soldadura[keys_prod][key_despues_prod]["total_pieza"]-piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]["total_pieza"]
-                                        print(total_disponible, "el total")
                                         total = {
                                             "total_disponlie": total_disponible,
                                             "fecha": piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]["fecha"],
                                             "OT": piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]['ot_produccion'],
-                                      
                                         }
 
                             pieza.append(total)
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_total_producto_terminado[keys_corte] = cantidad_dispoble
+    
+        #logica para obtener el valor mas critico
+    valores_minimos_linea_terminacion = []
+    for key in modelos_total_producto_terminado:
+        piezas_del_modelo = []
+        valores_de_piezas = []
+        orden_trabajo = []
+        for key_in in modelos_total_producto_terminado[key]:
+            
+        
+            piezas_del_modelo.append(key_in)
+            for key_sec in modelos_total_producto_terminado[key][key_in]:
+                valores_de_piezas.append(key_sec['total_disponlie'])
+                orden_trabajo.append(key_sec['OT'])
+          
+        a = min(valores_de_piezas)
+        indice = valores_de_piezas.index(a)
+        data = {
+            "valor_minimo": a,
+            "modelo": key,
+            "pieza": piezas_del_modelo[indice],
+            "Ot": orden_trabajo[indice]
+            }
+        valores_minimos_linea_terminacion.append(data)
+    
 
 
 
@@ -1391,16 +1396,8 @@ def produccionProductoTermiandoDisponible():
 
 
 
-    return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado), 200
 
-
-
-
-
-
-
-
-
+    return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado, valores_minimos_linea_terminacion), 200
 
 
 
