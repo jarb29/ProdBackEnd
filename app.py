@@ -1240,11 +1240,6 @@ def produccionProductoTerminado():
             return jsonify({"msg": "Falta introducir subproducto"}), 400
         if not producto_terminado_utilizado_estufa:
             return jsonify({"msg": "Falta introducir la cantidad terminada"}), 400
-        
-        verificador = ProduccionProductoTerminado.query.filter_by(ot_seleccionada  = ot_seleccionada, sub_producto_seleccionado = sub_producto_seleccionado).first()
-        if verificador:
-            return jsonify({"msg": "Sub Producto agregado anteriormente"}), 400
-        print(verificador, "verificador")
 
         usua = ProduccionProductoTerminado()
         usua.ot_seleccionada = ot_seleccionada
@@ -1262,10 +1257,10 @@ def produccionProductoTerminado():
 
 
 # Logica para obter la tabla de produccion producto terminado disponibles
-@app.route('/api/produccionprductoterminadoDisponible', methods=['GET'])
+@app.route('/api/produccionProductoTerminadoDisponible', methods=['GET'])
 def produccionProductoTermiandoDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
-    piezas_modelo = {}
+    piezas_modelo_terminado = {}
     for modelo in modelosEnProduccion:
         sub_productos = SubProducto.query.all()
         sub_producto_total = {}
@@ -1293,10 +1288,110 @@ def produccionProductoTermiandoDisponible():
                     sub_producto_por_dia .append(total)
                 i +=1
                 sub_producto_total[sub_producto_produccion.sub_producto_seleccionado] = sub_producto_por_dia 
-        piezas_modelo[modelo.modelo_produccion] = sub_producto_total
+        piezas_modelo_terminado[modelo.modelo_produccion] = sub_producto_total
+    
 
-        print(piezas_modelo)
-    return jsonify(piezas_modelo), 200
+   
+
+    
+#Logica para obtener la cantidad de piezas disponibles (cortado - usado) primera parte (usado)
+    piezas_modelo_produccion_terminada = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.filter_by(subProducto_ot_seleccionado = modelo.ot_produccion).all()
+      
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+      
+
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.producto_terminado_utilizado_estufa
+                total_pieza_suma += total_pieza
+                if (i == len(sub_productos_produccion)):
+                  
+                    piezas_por_produccion = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
+         
+                    for pieza in piezas_por_produccion:
+                        numero_de_pieza_por_subpro = pieza.producto_terminado_utilizado_estufa * total_pieza_suma
+                   
+                        data_total_pieza ={
+                            "ot_produccion": sub_producto_produccion.ot_seleccionada,
+                            "total_pieza": numero_de_pieza_por_subpro,
+                            "fecha": sub_producto_produccion.date_created
+                            }
+                        #sub_producto_por_dia.append(data_total_pieza)
+                        sub_producto_total[pieza.sub_producto_seleccionado] = data_total_pieza
+                i +=1            
+        piezas_modelo_produccion_terminada[modelo.modelo_produccion] = sub_producto_total
+
+#piezas fabricadas en la linea de soldadura
+
+    piezas_modelo_soldadura = {}
+    for modelo in modelosEnProduccion:
+        sub_productos = SubProducto.query.all()
+        sub_producto_total = {}
+        for sub_producto in sub_productos:
+            sub_producto_por_dia = []
+            total_pieza_suma = 0 
+            sub_productos_produccion = Produccion.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
+            i = 1
+            for sub_producto_produccion in sub_productos_produccion:
+                total_pieza = sub_producto_produccion.produccion_Cantidad_fabricada
+                total_pieza_suma += total_pieza
+                total ={
+                    "total_pieza": total_pieza_suma,
+                     "fecha": sub_producto_produccion.date_created,
+                     "ot": sub_producto_produccion.ot_seleccionada
+                    } 
+                if (i == len(sub_productos_produccion)):
+                    sub_producto_por_dia .append(total)
+                i +=1
+                sub_producto_total[sub_producto_produccion.sub_producto_seleccionado] = total
+        piezas_modelo_soldadura[modelo.modelo_produccion] = sub_producto_total
+
+    
+
+    modelos_total_producto_terminado = {}
+    for keys_corte in piezas_modelo_soldadura:
+      
+        for keys_prod in piezas_modelo_produccion_terminada:
+            if keys_corte == keys_prod:
+
+                cantidad_dispoble={}
+                for key_despues_corte in piezas_modelo_soldadura[keys_corte]:
+                    for key_despues_prod in piezas_modelo_produccion_terminada[keys_corte]:
+                        if key_despues_corte == key_despues_prod:
+
+                            pieza = []
+                            for keys_final_produc in piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]:
+                                for keys_final_corte in piezas_modelo_soldadura[keys_prod][key_despues_prod]:
+
+                      
+                                    if keys_final_produc  == keys_final_corte:
+
+                                        total_disponible = piezas_modelo_soldadura[keys_prod][key_despues_prod]["total_pieza"]-piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]["total_pieza"]
+                                        print(total_disponible, "el total")
+                                        total = {
+                                            "total_disponlie": total_disponible,
+                                            "fecha": piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]["fecha"],
+                                            "OT": piezas_modelo_produccion_terminada[keys_prod][key_despues_prod]['ot_produccion'],
+                                      
+                                        }
+
+                            pieza.append(total)
+                            cantidad_dispoble[key_despues_corte] =  pieza            
+                            modelos_total_producto_terminado[keys_corte] = cantidad_dispoble
+
+
+
+
+
+
+
+    return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado), 200
 
 
 
