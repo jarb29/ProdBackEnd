@@ -1400,14 +1400,6 @@ def produccionProductoTermiandoDisponible():
             "Ot": orden_trabajo[indice]
             }
         valores_minimos_linea_terminacion.append(data)
-    
-
-
-
-
-
-
-
 
     return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado, valores_minimos_linea_terminacion), 200
 
@@ -1445,16 +1437,71 @@ def PlanProduccionMensualEstufas():
 
 
 
+@app.route("/api/graficaPlanProduccionMensual", methods=['GET'])
+def GraficaPlanProduccionMensual():
+    modelosEnProduccion = ModeloProduccion.query.all()
+    tiempo_modelo = {}
+    tiempo_modelo_diario ={}
+    for modelo in modelosEnProduccion:
+
+        nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
+        cantidad_plan_mensual = PlanProduccionMensual.query.filter_by(ot_en_produccion = modelo.ot_produccion).first().estufas_plan_producc
+        total_tiempo_Modelo  = 0
+        pieza_nestic = []
+        i = 1
+        for nesti in nestis:
+            planchas_usadas = cantidad_plan_mensual / nesti.numero_piezas_criticas
+            total_tiempo = round((nesti.tiempo_corte + 0.4) * planchas_usadas )
+            total_tiempo_Modelo += total_tiempo
+            data = {
+                "ot_produccion": modelo.ot_produccion,
+                "total_suma": total_tiempo_Modelo
+                }
+
+            if (i == len(nestis)):
+                pieza_nestic.append(data)
+            i +=1
+            #piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
+        tiempo_modelo[modelo.modelo_produccion] = pieza_nestic
+    
+    tiempo_modelo_diario ={}
+    for modelo in modelosEnProduccion:
+        nestis_modelo = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
+        b =1
+        tiempo_usa = []
+        total_tiempo = 0
+        for nest in nestis_modelo:
+            nestis_produc = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado = nest.programa_nestic).all()
+            i = 1
+            planchas_proceso = 0
+           
+            for nesti in nestis_produc:
+                planchas_cortadas = nesti.planchas_cortadas
+   
+                planchas_proceso += planchas_cortadas
+                if (i == len(nestis_produc)):
+                 
+                    tiempo = round((nest.tiempo_corte + 0.4) * planchas_proceso)
+                    total_tiempo += tiempo
+                    #print(total_tiempo)
+                    print(b)
+                    if (b == len(nestis_modelo)):
+                        print(len(nestis_modelo))
+                        print(b)
+                        print(total_tiempo)
+                        data = {
+                            "ot_produccion": modelo.ot_produccion,
+                            "total_suma": total_tiempo
+                            }
+                        tiempo_usa.append(data)
+                i +=1
+            b +=1
+            #piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
+        tiempo_modelo_diario[modelo.modelo_produccion] = tiempo_usa
 
 
 
-
-
-
-
-
-
-
+    return jsonify(tiempo_modelo, tiempo_modelo_diario), 200
 
 
 
