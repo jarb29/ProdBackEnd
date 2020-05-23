@@ -274,3 +274,22 @@ class ProduccionProductoTerminado(db.Model):
             "producto_terminado_utilizado_estufa": self.producto_terminado_utilizado_estufa,
             "date_created":self.date_created
         }  
+
+
+class PlanProduccionMensual(db.Model):
+    __tablename__ = 'planProduccionMensual'
+    id = db.Column(db.Integer, primary_key = True)
+    ot_en_produccion = db.Column(db.Integer)
+    estufas_plan_producc = db.Column(db.Integer)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"planProduccionMensual('{self.estufas_plan_producc}', '{self.ot_en_produccion}', '{self.date_created}')"
+
+    def serialize(self):
+        return {
+            "id":self.id,
+            "modelo_produccion": self.estufas_plan_producc,
+            "ot_produccion": self.ot_en_produccion,
+            "date_created": self.date_created
+        }

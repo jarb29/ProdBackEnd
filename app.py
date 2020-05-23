@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado, ProduccionProductoTerminado
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado, ProduccionProductoTerminado, PlanProduccionMensual
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -1398,6 +1398,46 @@ def produccionProductoTermiandoDisponible():
 
 
     return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado, valores_minimos_linea_terminacion), 200
+
+
+@app.route("/api/planproduccion", methods=['POST'])
+def PlanProduccionMensual():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        
+        ot_en_produccion = request.json.get('ot_en_produccion', None)
+        estufas_plan_producc = request.json.get('estufas_plan_producc', None)
+   
+        
+        if not ot_en_produccion:
+            return jsonify({"msg": "Falta introducir la ot"}), 400
+        if not estufas_plan_producc:
+            return jsonify({"msg": "Falta introducir la cantidad"}), 400
+      
+        
+        usua = PlanProduccionMensual()
+        usua.ot_en_produccion = ot_en_produccion
+        usua.estufas_plan_producc = estufas_plan_producc
+        db.session.add(usua)
+        db.session.commit()
+
+    data = {
+        "plan_produccion": usua.serialize() 
+    }
+    return jsonify({'msg': 'Plan agregado exitosamente'}),  200
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
