@@ -1483,12 +1483,7 @@ def GraficaPlanProduccionMensual():
                  
                     tiempo = round((nest.tiempo_corte + 0.4) * planchas_proceso)
                     total_tiempo += tiempo
-                    #print(total_tiempo)
-                    print(b)
                     if (b == len(nestis_modelo)):
-                        print(len(nestis_modelo))
-                        print(b)
-                        print(total_tiempo)
                         data = {
                             "ot_produccion": modelo.ot_produccion,
                             "total_suma": total_tiempo
@@ -1498,10 +1493,15 @@ def GraficaPlanProduccionMensual():
             b +=1
             #piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
         tiempo_modelo_diario[modelo.modelo_produccion] = tiempo_usa
+    
+    estufas_modelo_diario ={}
+    for modelo in modelosEnProduccion:
+        nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
+        cantidad_plan_mensual = PlanProduccionMensual.query.filter_by(ot_en_produccion = modelo.ot_produccion).first().estufas_plan_producc
+        estufas_modelo_diario[modelo.modelo_produccion] = cantidad_plan_mensual
 
 
-
-    return jsonify(tiempo_modelo, tiempo_modelo_diario), 200
+    return jsonify(tiempo_modelo, tiempo_modelo_diario, estufas_modelo_diario), 200
 
 
 
