@@ -1494,14 +1494,30 @@ def GraficaPlanProduccionMensual():
             #piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
         tiempo_modelo_diario[modelo.modelo_produccion] = tiempo_usa
     
-    estufas_modelo_diario ={}
+    estufas_modelo_plan_produccion ={}
     for modelo in modelosEnProduccion:
         nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
         cantidad_plan_mensual = PlanProduccionMensual.query.filter_by(ot_en_produccion = modelo.ot_produccion).first().estufas_plan_producc
-        estufas_modelo_diario[modelo.modelo_produccion] = cantidad_plan_mensual
+        estufas_modelo_plan_produccion[modelo.modelo_produccion] = cantidad_plan_mensual
+
+    estufas_modelo_diario={}
+    for modelo in modelosEnProduccion:
+        nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
+        cantidad_por_produccions = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado = "estufa").all()
+       
+        total_estufas_modelo = 0
+        i = 1 
+        for estufa in cantidad_por_produccions:
+            total_por_turno = estufa.producto_terminado_utilizado_estufa
+            total_estufas_modelo += total_por_turno
+            if (i == len(cantidad_por_produccions)):
+                estufas_modelo_diario[modelo.modelo_produccion] = total_estufas_modelo
+            i +=1
 
 
-    return jsonify(tiempo_modelo, tiempo_modelo_diario, estufas_modelo_diario), 200
+
+
+    return jsonify(tiempo_modelo, tiempo_modelo_diario, estufas_modelo_plan_produccion, estufas_modelo_diario), 200
 
 
 
