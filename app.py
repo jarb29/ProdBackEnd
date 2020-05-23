@@ -1400,8 +1400,8 @@ def produccionProductoTermiandoDisponible():
     return jsonify(piezas_modelo_terminado, piezas_modelo_produccion_terminada, piezas_modelo_soldadura, modelos_total_producto_terminado, valores_minimos_linea_terminacion), 200
 
 
-@app.route("/api/planproduccion", methods=['POST'])
-def PlanProduccionMensual():
+@app.route("/api/planProduccionMensual", methods=['POST'])
+def PlanProduccionMensualEstufas():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
     if request.method == 'POST':
@@ -1409,12 +1409,15 @@ def PlanProduccionMensual():
         ot_en_produccion = request.json.get('ot_en_produccion', None)
         estufas_plan_producc = request.json.get('estufas_plan_producc', None)
    
-        
         if not ot_en_produccion:
             return jsonify({"msg": "Falta introducir la ot"}), 400
         if not estufas_plan_producc:
             return jsonify({"msg": "Falta introducir la cantidad"}), 400
-      
+
+        verificador = PlanProduccionMensual.query.filter_by(ot_en_produccion = ot_en_produccion).first()
+        if verificador:
+            return jsonify({"msg": "Modelo ya Agregado"}), 400
+
         
         usua = PlanProduccionMensual()
         usua.ot_en_produccion = ot_en_produccion
