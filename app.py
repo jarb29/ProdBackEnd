@@ -1273,6 +1273,7 @@ def produccionProductoTermiandoDisponible():
                 i +=1
                 sub_producto_total[sub_producto_produccion.sub_producto_seleccionado] = sub_producto_por_dia 
         piezas_modelo_terminado[modelo.modelo_produccion] = sub_producto_total
+
     
 
    
@@ -1285,6 +1286,7 @@ def produccionProductoTermiandoDisponible():
       
         sub_producto_total = {}
         for sub_producto in sub_productos:
+           
             sub_producto_por_dia = []
             total_pieza_suma = 0 
             sub_productos_produccion = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto.Linea1NombreSubproducto).all()
@@ -1292,12 +1294,13 @@ def produccionProductoTermiandoDisponible():
       
 
             for sub_producto_produccion in sub_productos_produccion:
+                
                 total_pieza = sub_producto_produccion.producto_terminado_utilizado_estufa
                 total_pieza_suma += total_pieza
                 if (i == len(sub_productos_produccion)):
                   
                     piezas_por_produccion = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
-         
+                    print(piezas_por_produccion, "para ver que hace")
                     for pieza in piezas_por_produccion:
                         numero_de_pieza_por_subpro = pieza.producto_terminado_utilizado_estufa * total_pieza_suma
                    
@@ -1309,7 +1312,8 @@ def produccionProductoTermiandoDisponible():
                         #sub_producto_por_dia.append(data_total_pieza)
                         sub_producto_total[pieza.sub_producto_seleccionado] = data_total_pieza
                 i +=1            
-        piezas_modelo_produccion_terminada[modelo.modelo_produccion] = sub_producto_total
+                piezas_modelo_produccion_terminada[modelo.modelo_produccion] = sub_producto_total
+    #print(piezas_modelo_produccion_terminada, "para ver que imprime")
 
 #piezas fabricadas en la linea de soldadura
 
