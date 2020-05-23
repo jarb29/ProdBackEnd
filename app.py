@@ -109,6 +109,14 @@ def crearNestic():
         if not longitud_nestic:
             return jsonify({"msg": "Falta introducir la longitud_nestic"}), 400
         
+        usua = Nestic.query.filter_by(modelo_elegido = modelo_elegido, programa_nestic=programa_nestic).first()
+        if usua:
+            return jsonify({"msg": "EL producto ya existe"}), 400
+
+
+
+
+
         usua = Nestic()
         usua.modelo_elegido = modelo_elegido
         usua.programa_nestic = programa_nestic
@@ -1300,7 +1308,7 @@ def produccionProductoTermiandoDisponible():
                 if (i == len(sub_productos_produccion)):
                   
                     piezas_por_produccion = PiezasIntegranProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado=sub_producto_produccion.sub_producto_seleccionado).all()
-                    print(piezas_por_produccion, "para ver que hace")
+            
                     for pieza in piezas_por_produccion:
                         numero_de_pieza_por_subpro = pieza.producto_terminado_utilizado_estufa * total_pieza_suma
                    
