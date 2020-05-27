@@ -1221,7 +1221,6 @@ def produccionPorModeloDisponible():
 
 # Agregando la produccion terminada logica
 @app.route("/api/produccionproductoterminado", methods=['POST'])
-@jwt_required
 def produccionProductoTerminado():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -1517,9 +1516,6 @@ def GraficaPlanProduccionMensual():
             if (i == len(cantidad_por_produccions)):
                 estufas_modelo_diario[modelo.modelo_produccion] = total_estufas_modelo
             i +=1
-
-
-
 
     return jsonify(tiempo_modelo, tiempo_modelo_diario, estufas_modelo_plan_produccion, estufas_modelo_diario), 200
 
