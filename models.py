@@ -299,11 +299,11 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     nombre = db.Column(db.String(100), nullable = False)
     email = db.Column(db.String(100), unique = True, nullable = False)
-    password = db.Column(db.String(100), nullable = False)
+    clave = db.Column(db.String(100), nullable = False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"users('{self.nombre }', '{self.email}', '{self.password}', '{self.date_created}')"
+        return f"usuarios('{self.nombre }', '{self.email}', '{self.clave}', '{self.date_created}')"
 
     def serialize(self):
         return {

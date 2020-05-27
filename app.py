@@ -1000,6 +1000,7 @@ def produccion():
 
 # Logica para obter la tabla de produccion disponibles
 @app.route('/api/produccionDisponible', methods=['GET'])
+@jwt_required
 def produccionDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
     piezas_modelo = {}
@@ -1037,6 +1038,7 @@ def produccionDisponible():
 
 # Logica para obter la tabla disponnible de piezas de corte
 @app.route('/api/producionPorModeloDisponible', methods=['GET'])
+@jwt_required
 def produccionPorModeloDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
     piezas_cortadas_totales = {}
@@ -1219,6 +1221,7 @@ def produccionPorModeloDisponible():
 
 # Agregando la produccion terminada logica
 @app.route("/api/produccionproductoterminado", methods=['POST'])
+@jwt_required
 def produccionProductoTerminado():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -1250,6 +1253,7 @@ def produccionProductoTerminado():
 
 # Logica para obter la tabla de produccion producto terminado disponibles
 @app.route('/api/produccionProductoTerminadoDisponible', methods=['GET'])
+@jwt_required
 def produccionProductoTermiandoDisponible():
     modelosEnProduccion = ModeloProduccion.query.all()
     piezas_modelo_terminado = {}
@@ -1546,8 +1550,8 @@ def register():
     usua.email = email
     db.session.add(usua)
     db.session.commit()
-    html = render_template('email-registerCliente.html', user=usua)
-    send_mail("Registro", "jarb29@gmail.com", usua.email, html)
+    # html = render_template('email-registerCliente.html', user=usua)
+    # send_mail("Registro", "jarb29@gmail.com", usua.email, html)
 
     access_token = create_access_token(identity=usua.nombre)
      
@@ -1559,7 +1563,7 @@ def register():
 
 
 
-@app.route('/api/loging', methods=['POST'])
+@app.route("/api/loging", methods=['POST'])
 def login():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
