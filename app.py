@@ -1530,7 +1530,6 @@ def register():
     clave = request.json.get('clave', None)
     email = request.json.get('email', None)
 
-
     if not nombre:
         return jsonify({"msg": "Falta el nombre"}), 400
     if not email:
@@ -1550,11 +1549,7 @@ def register():
     html = render_template('email-registerCliente.html', user=usua)
     send_mail("Registro", "jarb29@gmail.com", usua.email, html)
 
-
-
-
     access_token = create_access_token(identity=usua.nombre)
-   
      
     data = {
         "access_token": access_token,
@@ -1572,6 +1567,7 @@ def login():
         nombre = request.json.get('nombre', None)
         clave = request.json.get('clave', None)
         email = request.json.get('email', None)
+
         if not nombre:
             return jsonify({"msg": "Falta el nombre"}), 400
         if not email:
@@ -1581,12 +1577,6 @@ def login():
             return jsonify({"msg": "Usuario no existe"}), 400
         if not clave:
             return jsonify({"msg": "Falta la clave"}), 400
-
-
-        usua = Usuario.query.filter_by(email = usuario).first()
-
-        if not usua:
-            return jsonify({"msg": "Usuario no existe"}), 404
 
         if bcrypt.check_password_hash(usua.clave, clave):
             access_token = create_access_token(identity = usua.nombre)
