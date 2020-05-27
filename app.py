@@ -3,7 +3,7 @@ from flask import Flask, render_template, jsonify, request, redirect, send_from_
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 from flask_cors import CORS
-from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado, ProduccionProductoTerminado, PlanProduccionMensual
+from models import db, Modelo, Nestic, Piezas, ModeloProduccion, NesticProduccion, Plegado, Pintura, SubProducto, PiezasIntegranSubProducto, Produccion, PiezasIntegranProductoTerminado, ProduccionProductoTerminado, PlanProduccionMensual, User
 from flask_mail import Mail, Message
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity)
@@ -1519,6 +1519,84 @@ def GraficaPlanProduccionMensual():
 
     return jsonify(tiempo_modelo, tiempo_modelo_diario, estufas_modelo_plan_produccion, estufas_modelo_diario), 200
 
+
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    nombre = request.json.get('nombre', None)
+    clave = request.json.get('clave', None)
+    email = request.json.get('email', None)
+
+
+    if not nombre:
+        return jsonify({"msg": "Falta el nombre"}), 400
+    if not email:
+        return jsonify({"msg": "Falta el email"}), 400
+    usua = User.query.filter_by(email = email).first()
+    if usua:
+        return jsonify({"msg": "Usuario existe por favor elegir diferente Email"}), 400
+    if not clave:
+        return jsonify({"msg": "Falta la clave"}), 400
+
+    usua = User()
+    usua.nombre = nombre
+    usua.clave = bcrypt.generate_password_hash(clave) 
+    usua.email = email
+    db.session.add(usua)
+    db.session.commit()
+    html = render_template('email-registerCliente.html', user=usua)
+    send_mail("Registro", "jarb29@gmail.com", usua.email, html)
+
+
+
+
+    access_token = create_access_token(identity=usua.nombre)
+   
+     
+    data = {
+        "access_token": access_token,
+        "Usuario": usua.serialize()
+    }
+    return jsonify(data),  200
+
+
+
+@app.route('/api/loging', methods=['POST'])
+def login():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+    if request.method == 'POST':
+        nombre = request.json.get('nombre', None)
+        clave = request.json.get('clave', None)
+        email = request.json.get('email', None)
+        if not nombre:
+            return jsonify({"msg": "Falta el nombre"}), 400
+        if not email:
+            return jsonify({"msg": "Falta el email"}), 400
+        usua = User.query.filter_by(email = email).first()
+        if not usua:
+            return jsonify({"msg": "Usuario no existe"}), 400
+        if not clave:
+            return jsonify({"msg": "Falta la clave"}), 400
+
+
+        usua = Usuario.query.filter_by(email = usuario).first()
+
+        if not usua:
+            return jsonify({"msg": "Usuario no existe"}), 404
+
+        if bcrypt.check_password_hash(usua.clave, clave):
+            access_token = create_access_token(identity = usua.nombre)
+            data = {
+                "access_token": access_token,
+                "Usuario": usua.serialize()
+            }
+            return jsonify(data), 200
+        else:
+            return jsonify({"msg": "email/ clave errados favor verificar"}), 401
 
 
 if __name__ == '__main__':
