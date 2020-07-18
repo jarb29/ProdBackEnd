@@ -391,8 +391,8 @@ def estufasProduccionnn():
 # desde aca en adelante datos para plegado
 # 1 obtener las piezas disponibles por modelo
 
-@app.route('/api/plegadopiezas/<name>', methods=['GET'])
-def plegadopiezasDisponible(name):
+@app.route('/api/plegadopiezas/<int:id>/<name>', methods=['GET'])
+def plegadopiezasDisponible(id, name):
     piezas_por_modelo = []
     # modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
     # modelo_ot = modelo_ot.nombre_programa
@@ -409,6 +409,8 @@ def plegadopiezasDisponible(name):
     #         piezas_por_modelo.append(data)
 
 
+
+
     piezas = Piezas.query.filter_by(nesticElegido = name).all()
     for pieza in piezas:
         data = {
@@ -417,8 +419,28 @@ def plegadopiezasDisponible(name):
             "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
             }
         piezas_por_modelo.append(data)
+
+
+
+
+
+    total_piezas = Piezas.query.filter_by(nesticElegido = name).all()
     
-    return jsonify(piezas_por_modelo), 200
+    piezas_por_sub_modelo = []
+    for pieza in total_piezas:
+        piezas_en_sub_productos = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = id, piezaSeleccionaIntegraSubproducto = pieza.nombre_pieza).all()
+        print(piezas_en_sub_productos, "quiero ver que es")
+        if not piezas_en_sub_productos:
+            data = {
+                "nombre_pieza": pieza.nombre_pieza,
+                "nestic": pieza.nesticElegido,
+                "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
+                }
+            piezas_por_sub_modelo.append(data)
+    
+
+    
+    return jsonify(piezas_por_modelo, piezas_por_sub_modelo), 200
 
 
 # Logica para crear la tabla de piezas de plegado
