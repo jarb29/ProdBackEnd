@@ -391,22 +391,32 @@ def estufasProduccionnn():
 # desde aca en adelante datos para plegado
 # 1 obtener las piezas disponibles por modelo
 
-@app.route('/api/plegadopiezas/<int:id>', methods=['GET'])
-def plegadopiezasDisponible(id):
+@app.route('/api/plegadopiezas/<name>', methods=['GET'])
+def plegadopiezasDisponible(name):
     piezas_por_modelo = []
-    modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
-    modelo_ot = modelo_ot.nombre_programa
-    nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
-    for nest in nesti_ot:
-        nombre = nest.programa_nestic
-        piezas = Piezas.query.filter_by(nesticElegido = nombre).all()
-        for pieza in piezas:
-            data = {
-                "nombre_pieza": pieza.nombre_pieza,
-                "nestic": pieza.nesticElegido,
-                "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
+    # modelo_ot = Modelo.query.filter_by(numero_ot=id).first()
+    # modelo_ot = modelo_ot.nombre_programa
+    # nesti_ot = Nestic.query.filter_by(modelo_elegido=modelo_ot).all()
+    # for nest in nesti_ot:
+    #     nombre = nest.programa_nestic
+    #     piezas = Piezas.query.filter_by(nesticElegido = nombre).all()
+    #     for pieza in piezas:
+    #         data = {
+    #             "nombre_pieza": pieza.nombre_pieza,
+    #             "nestic": pieza.nesticElegido,
+    #             "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
+    #         }
+    #         piezas_por_modelo.append(data)
+
+
+    piezas = Piezas.query.filter_by(nesticElegido = name).all()
+    for pieza in piezas:
+        data = {
+            "nombre_pieza": pieza.nombre_pieza,
+            "nestic": pieza.nesticElegido,
+            "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
             }
-            piezas_por_modelo.append(data)
+        piezas_por_modelo.append(data)
     
     return jsonify(piezas_por_modelo), 200
 
@@ -1061,7 +1071,9 @@ def produccionPorModeloDisponible():
                     } 
                 if (i == len(nestis)):
                     pieza_nestic.append(total)
+
                 i +=1
+
                 piezas_cortadas[pieza.nombre_pieza] = total
         piezas_cortadas_totales[modelo.modelo_produccion] = piezas_cortadas
 
@@ -1103,30 +1115,23 @@ def produccionPorModeloDisponible():
     #Logica para obtener la cantidad de peizas disponibles (cortado - usado) segunda parte (cortado)
     modelos_tot = {}
     for keys_corte in piezas_cortadas_totales:
-      
         for keys_prod in piezas_modelo_produccion:
             if keys_corte == keys_prod:
-
                 cantidad_dispoble={}
                 for key_despues_corte in piezas_cortadas_totales[keys_corte]:
                     for key_despues_prod in piezas_modelo_produccion[keys_corte]:
                         if key_despues_corte == key_despues_prod:
-
                             pieza = []
                             for keys_final_produc in piezas_modelo_produccion[keys_prod][key_despues_prod]:
                                 for keys_final_corte in piezas_cortadas_totales[keys_prod][key_despues_prod]:
-                                    
                                     if keys_final_produc  == keys_final_corte:
-
                                         total_disponible = piezas_cortadas_totales[keys_prod][key_despues_prod]["total_por_pieza"]-piezas_modelo_produccion[keys_prod][key_despues_prod]["total_por_pieza"]
-                                      
                                         total = {
                                             "total_disponlie": total_disponible,
                                             "fecha": piezas_modelo_produccion[keys_prod][key_despues_prod]["fecha"],
                                             "OT": piezas_modelo_produccion[keys_prod][key_despues_prod]['ot_produccion'],
                                             "nest": piezas_cortadas_totales[keys_prod][key_despues_prod]['nesti']
                                         }
-
                             pieza.append(total)
                             cantidad_dispoble[key_despues_corte] =  pieza            
                             modelos_tot[keys_corte] = cantidad_dispoble
@@ -1159,9 +1164,7 @@ def produccionPorModeloDisponible():
             "Ot": orden_trabajo[indice]
             }
         valores_minimos_por_modelos_corte.append(data)
-    
 
-    
     #Logica para obtener la cantidad de planchas cortadas por nestics
     programa_nest_estufa = {}
     prueba_cortes = []
@@ -1198,7 +1201,7 @@ def produccionPorModeloDisponible():
 
  #Logica para obtener la cantidad de estufas minimas a fabricar
     disponibilidad_fabricacion = []
-    for values  in valores_minimos_por_modelos_corte:
+    for values in valores_minimos_por_modelos_corte:
 
         piezas_cantidad_usada_estufa = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = values["Ot"], piezaSeleccionaIntegraSubproducto = values["pieza"]).first()
         disponibilidad = round(values["valor_minimo"] / piezas_cantidad_usada_estufa.cantidad_utilizada_por_subproducto)
@@ -1215,7 +1218,6 @@ def produccionPorModeloDisponible():
 
         }
         disponibilidad_fabricacion.append(data)
-       
     return jsonify(modelos_tot, valores_minimos_por_modelos_corte, prueba_cortes, disponibilidad_fabricacion), 200
 
 
@@ -1424,8 +1426,7 @@ def PlanProduccionMensualEstufas():
         verificador = PlanProduccionMensual.query.filter_by(ot_en_produccion = ot_en_produccion).first()
         if verificador:
             return jsonify({"msg": "Modelo ya Agregado"}), 400
-
-        
+            
         usua = PlanProduccionMensual()
         usua.ot_en_produccion = ot_en_produccion
         usua.estufas_plan_producc = estufas_plan_producc
@@ -1477,24 +1478,27 @@ def GraficaPlanProduccionMensual():
             nestis_produc = NesticProduccion.query.filter_by(ot_cortada = modelo.ot_produccion, nestic_cortado = nest.programa_nestic).all()
             i = 1
             planchas_proceso = 0
-           
             for nesti in nestis_produc:
                 planchas_cortadas = nesti.planchas_cortadas
-   
                 planchas_proceso += planchas_cortadas
                 if (i == len(nestis_produc)):
-                 
                     tiempo = round((nest.tiempo_corte + 0.4) * planchas_proceso)
                     total_tiempo += tiempo
-                    if (b == len(nestis_modelo)):
-                        data = {
-                            "ot_produccion": modelo.ot_produccion,
-                            "total_suma": total_tiempo
-                            }
-                        tiempo_usa.append(data)
+               
+                    # if (b == len(nestis_modelo)):
+                    #     data = {
+                    #         "ot_produccion": modelo.ot_produccion,
+                    #         "total_suma": total_tiempo
+                    #         }
+                    #     tiempo_usa.append(data)
                 i +=1
+            if (b == len(nestis_modelo)):
+                data = {
+                    "ot_produccion": modelo.ot_produccion,
+                    "total_suma": total_tiempo
+                    }
+                tiempo_usa.append(data)
             b +=1
-            #piezas_cortadas[pieza.nombre_pieza] = pieza_nestic
         tiempo_modelo_diario[modelo.modelo_produccion] = tiempo_usa
     
     estufas_modelo_plan_produccion ={}
