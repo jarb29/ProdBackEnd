@@ -420,16 +420,10 @@ def plegadopiezasDisponible(id, name):
             }
         piezas_por_modelo.append(data)
 
-
-
-
-
     total_piezas = Piezas.query.filter_by(nesticElegido = name).all()
-    
     piezas_por_sub_modelo = []
     for pieza in total_piezas:
         piezas_en_sub_productos = PiezasIntegranSubProducto.query.filter_by(subProducto_ot_seleccionado = id, piezaSeleccionaIntegraSubproducto = pieza.nombre_pieza).all()
-        print(piezas_en_sub_productos, "quiero ver que es")
         if not piezas_en_sub_productos:
             data = {
                 "nombre_pieza": pieza.nombre_pieza,
@@ -437,9 +431,6 @@ def plegadopiezasDisponible(id, name):
                 "piezas_por_plancha": pieza.cantidadPiezasPorPlancha
                 }
             piezas_por_sub_modelo.append(data)
-    
-
-    
     return jsonify(piezas_por_modelo, piezas_por_sub_modelo), 200
 
 
@@ -1528,12 +1519,12 @@ def GraficaPlanProduccionMensual():
         nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
         cantidad_plan_mensual = PlanProduccionMensual.query.filter_by(ot_en_produccion = modelo.ot_produccion).first().estufas_plan_producc
         estufas_modelo_plan_produccion[modelo.modelo_produccion] = cantidad_plan_mensual
+  
 
     estufas_modelo_diario={}
     for modelo in modelosEnProduccion:
         nestis = Nestic.query.filter_by(modelo_elegido = modelo.modelo_produccion).all()
-        cantidad_por_produccions = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado = "estufa").all()
-       
+        cantidad_por_produccions = ProduccionProductoTerminado.query.filter_by(ot_seleccionada = modelo.ot_produccion, sub_producto_seleccionado = "Estufa").all()
         total_estufas_modelo = 0
         i = 1 
         for estufa in cantidad_por_produccions:
